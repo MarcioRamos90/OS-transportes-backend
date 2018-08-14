@@ -8,12 +8,14 @@ const requesters = require("./routes/api/requesters");
 const companies = require("./routes/api/companies");
 const drivers = require("./routes/api/drivers");
 const cars = require("./routes/api/cars");
+const allowCors = require("./config/cors");
 
 const app = express();
 
 // Body parser middleware
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
+app.use(allowCors);
 
 // DB config
 const db = require("./config/keys").mongoURI;
