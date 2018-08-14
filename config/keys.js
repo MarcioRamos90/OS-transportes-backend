@@ -1,4 +1,4 @@
 module.exports = {
   mongoURI: process.env.MONGO_URI || "mongodb://localhost/os",
-  secretOrKeys: process.env.SecretOrKeys
+  secretOrKey: process.env.SecretOrKeys || "Secret"
 };
