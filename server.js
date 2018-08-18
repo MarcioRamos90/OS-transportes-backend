@@ -34,8 +34,8 @@ require("./config/passport")(passport);
 
 // USe Routes
 app.use("/api/users", users);
-app.use("/api/requesters", requesters);
 app.use("/api/companies", companies);
+app.use("/api/requesters", requesters);
 app.use("/api/drivers", drivers);
 app.use("/api/cars", cars);
 
