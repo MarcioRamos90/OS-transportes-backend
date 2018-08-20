@@ -20,7 +20,7 @@ router.get(
   }
 );
 
-// @route POST api/companies/test
+// @route POST api/companies/
 // @desc add new companie
 // @access Public
 router.post("/", (req, res) => {
@@ -47,11 +47,19 @@ router.post("/", (req, res) => {
 // @access Public
 router.put("/edit", (req, res) => {
   const { id } = req.body;
-  Companie.findByIdAndUpdate(id).then(comp => {
-    if (!comp) {
-      return res.status(400).json({ error: "Empresa não encontrada" });
-      // Continue....
-    }
+  const company = {
+    name: req.body.name,
+    adress: req.body.adress,
+    phone: req.body.phone,
+    cnpj: req.body.cnpj
+  };
+  Companie.findByIdAndUpdate(id, company, (err, comp) => {
+    if (err)
+      return res
+        .status(400)
+        .json({ update: "Não foi possível realizar a alteração" });
+
+    return res.json("Alteração realizada com sucesso!");
   });
 });
 
