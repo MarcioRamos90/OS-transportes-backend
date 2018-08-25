@@ -20,6 +20,19 @@ router.get(
   }
 );
 
+// @route GET api/companies/:id
+// @desc get companie by id
+// @access Public
+router.get("/:id", (req, res) => {
+  const id = req.params.id;
+  Companie.findById(id, (err, comp) => {
+    if (err)
+      return res.status(400).json({ id: "Não encontrado empresa com essa id" });
+
+    res.json(comp);
+  });
+});
+
 // @route POST api/companies/
 // @desc add new companie
 // @access Public
