@@ -55,9 +55,10 @@ router.post("/", (req, res) => {
   });
 });
 
-// @route PUT api/companies/
+// @route PUT api/companies/edit
 // @desc alt companie
 // @access Public
+
 router.put("/edit", (req, res) => {
   const { id } = req.body;
   const company = {
@@ -71,7 +72,7 @@ router.put("/edit", (req, res) => {
       return res
         .status(400)
         .json({ update: "Não foi possível realizar a alteração" });
-
+    console.log(comp);
     return res.json("Alteração realizada com sucesso!");
   });
 });
