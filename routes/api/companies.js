@@ -30,9 +30,6 @@ router.get("/", (req, res) => {
   Companie.find(filter, (err, doc) => {
     if (err) return res.status(400).json(err);
 
-    if (doc.length < 1) {
-      return res.status(400).json({ find: "Não encontrado!" });
-    }
     res.json(doc);
   });
 });
