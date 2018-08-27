@@ -42,7 +42,9 @@ function escapeRegex(text) {
 // @desc get companie by id
 // @access Public
 router.get("/:id", (req, res) => {
-  const id = req.body.id;
+  const id = req.params.id;
+
+  eval(require("locus"));
   Companie.findById(id, (err, comp) => {
     if (err)
       return res.status(400).json({ id: "Não encontrado empresa com essa id" });
