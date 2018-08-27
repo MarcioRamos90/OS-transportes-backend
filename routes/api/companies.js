@@ -44,7 +44,6 @@ function escapeRegex(text) {
 router.get("/:id", (req, res) => {
   const id = req.params.id;
 
-  eval(require("locus"));
   Companie.findById(id, (err, comp) => {
     if (err)
       return res.status(400).json({ id: "Não encontrado empresa com essa id" });
@@ -93,7 +92,6 @@ router.put("/edit", (req, res) => {
       return res
         .status(400)
         .json({ update: "Não foi possível realizar a alteração" });
-    console.log(comp);
     return res.json("Alteração realizada com sucesso!");
   });
 });
