@@ -1,8 +1,4 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
-const keys = require("../../config/keys");
-const passport = require("passport");
-const isEmpty = require("../../validation/is-empty");
 
 const router = express.Router();
 
@@ -76,7 +72,7 @@ router.post("/", (req, res) => {
 });
 
 // @route PUT api/companies/edit
-// @desc alt companie
+// @desc alt company
 // @access Public
 
 router.put("/edit", (req, res) => {
@@ -92,7 +88,7 @@ router.put("/edit", (req, res) => {
       return res
         .status(400)
         .json({ update: "Não foi possível realizar a alteração" });
-    return res.json("Alteração realizada com sucesso!");
+    return res.json({ empresa: "Alteração realizada com sucesso!" });
   });
 });
 
