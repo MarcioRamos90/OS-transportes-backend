@@ -25,8 +25,6 @@ router.get("/", (req, res) => {
     ? (filter.active = true)
     : (filter.active = false);
 
-  // eval(require("locus"));
-
   Car.find(filter, (err, doc) => {
     if (err) return res.status(400).json(err);
 
@@ -90,9 +88,8 @@ router.put("/edit", (req, res) => {
     if (err) {
       return res
         .status(400)
-        .json({ upstade: "Não foi possivel realizar a alteração" });
+        .json({ uptade: "Não foi possivel realizar a alteração" });
     }
-
     return res.json({ carro: "Alteração realizada com sucesso!" });
   });
 });
