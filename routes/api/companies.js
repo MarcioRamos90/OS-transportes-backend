@@ -22,6 +22,9 @@ router.get("/", (req, res) => {
   req.query.cnpj
     ? (filter.cnpj = new RegExp(escapeRegex(req.query.cnpj), "gi"))
     : "";
+  req.query.active === "true"
+    ? (filter.active = true)
+    : (filter.active = false);
 
   Companie.find(filter, (err, doc) => {
     if (err) return res.status(400).json(err);
@@ -60,7 +63,8 @@ router.post("/", (req, res) => {
         name: req.body.name,
         adress: req.body.adress,
         phone: req.body.phone,
-        cnpj: req.body.cnpj
+        cnpj: req.body.cnpj,
+        active: req.body.active
       });
 
       newComp
@@ -81,7 +85,8 @@ router.put("/edit", (req, res) => {
     name: req.body.name,
     adress: req.body.adress,
     phone: req.body.phone,
-    cnpj: req.body.cnpj
+    cnpj: req.body.cnpj,
+    active: req.body.active
   };
   Companie.findByIdAndUpdate(id, company, (err, comp) => {
     if (err)

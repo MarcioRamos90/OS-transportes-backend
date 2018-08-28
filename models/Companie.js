@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const moment = require("moment");
 
 // create schema
 const CompanieSchema = new Schema({
@@ -7,7 +8,7 @@ const CompanieSchema = new Schema({
   adress: { type: String, required: false },
   phone: { type: String, required: false },
   cnpj: { type: String, required: false },
-  date: { type: Date, default: Date.now },
+  date: { type: String, default: moment().format("L") },
   active: { type: Boolean, default: true }
 });
 
