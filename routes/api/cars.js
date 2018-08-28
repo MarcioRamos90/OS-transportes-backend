@@ -21,9 +21,11 @@ router.get("/", (req, res) => {
   req.query.chassi
     ? (filter.chassi = new RegExp(escapeRegex(req.query.chassi), "gi"))
     : "";
-  req.query.active
-    ? (filter.active = new RegExp(escapeRegex(req.query.active), "gi"))
-    : "";
+  req.query.active === "true"
+    ? (filter.active = true)
+    : (filter.active = false);
+
+  // eval(require("locus"));
 
   Car.find(filter, (err, doc) => {
     if (err) return res.status(400).json(err);
@@ -60,7 +62,8 @@ router.post("/", (req, res) => {
       name: req.body.name,
       renavam: req.body.renavam,
       yearfab: req.body.yearfab,
-      chassi: req.body.chassi
+      chassi: req.body.chassi,
+      active: req.body.active
     });
 
     newCar
