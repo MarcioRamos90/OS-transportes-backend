@@ -26,7 +26,7 @@ router.get("/", (req, res) => {
     : (filter.active = false);
 
   Car.find(filter, (err, doc) => {
-    if (err) return res.status(400).json(err);
+    if (err) return res.status(400).json({ error: "Erro na busca" });
 
     res.json(doc);
   });
