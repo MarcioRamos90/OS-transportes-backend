@@ -22,10 +22,11 @@ router.get("/", (req, res) => {
   req.query.cnpj
     ? (filter.cnpj = new RegExp(escapeRegex(req.query.cnpj), "gi"))
     : "";
-  req.query.active === "true"
+  req.query.active !== "false"
     ? (filter.active = true)
     : (filter.active = false);
 
+  console.log(filter)
   Companie.find(filter, (err, doc) => {
     if (err) return res.status(400).json(err);
 

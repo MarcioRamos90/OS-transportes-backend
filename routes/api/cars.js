@@ -4,7 +4,7 @@ const router = express.Router();
 
 const Car = require("../../models/Car");
 
-// @route GET api/users/test
+// @route GET api/users/
 // @desc Test cars routers
 // @access Public
 router.get("/", (req, res) => {

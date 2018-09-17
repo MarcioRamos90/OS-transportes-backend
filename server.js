@@ -9,6 +9,7 @@ const requesters = require("./routes/api/requesters");
 const companies = require("./routes/api/companies");
 const drivers = require("./routes/api/drivers");
 const cars = require("./routes/api/cars");
+const services = require("./routes/api/services");
 const allowCors = require("./config/cors");
 
 const app = express();
@@ -33,12 +34,16 @@ app.use(passport.initialize());
 // Passport config
 require("./config/passport")(passport);
 
-// USe Routes
+// Use Routes
+
+app.use("/api/services", services)
 app.use("/api/users", users);
 app.use("/api/companies", companies);
 app.use("/api/requesters", requesters);
 app.use("/api/drivers", drivers);
 app.use("/api/cars", cars);
+
+
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => console.log(`server running on port ${port}`));
