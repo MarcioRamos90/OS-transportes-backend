@@ -94,7 +94,7 @@ router.post('/', (req, res) => {
 	newService.save()
 		.then(doc => res.json(doc))
 		.catch(err => {
-			console.log('erro')
+			console.log('errox')
 			res.status(400).json(err)
 
 		});
