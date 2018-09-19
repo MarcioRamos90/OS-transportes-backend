@@ -4,6 +4,7 @@ const moment = require("moment");
 
 const DriverSchema = new Schema({
   name: { type: String, required: true },
+  tel: { type: String, required: true },
   bilingue: { type: Boolean, default: false },
   cpf: { type: String, required: false },
   rg: { type: String, required: false },

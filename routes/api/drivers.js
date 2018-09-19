@@ -12,6 +12,9 @@ router.get("/", (req, res) => {
   req.query.name
     ? (filter.name = new RegExp(escapeRegex(req.query.name), "gi"))
     : "";
+  req.query.tel
+    ? (filter.tel = new RegExp(escapeRegex(req.query.tel), "gi"))
+    : "";
   req.query.bilingue ? (filter.bilingue = req.query.bilingue) : "";
   req.query.cpf
     ? (filter.cpf = new RegExp(escapeRegex(req.query.cpf), "gi"))
@@ -61,6 +64,7 @@ router.post("/", (req, res) => {
 
     const newDriver = new Driver({
       name: req.body.name,
+      tel: req.body.tel,
       bilingue: req.body.bilingue,
       cpf: req.body.cpf,
       rg: req.body.rg,
@@ -82,6 +86,7 @@ router.put("/edit", (req, res) => {
   const { id } = req.body;
   const driver = {
     name: req.body.name,
+    tel: req.body.tel,
     bilingue: req.body.bilingue == true ? true : false,
     cpf: req.body.cpf,
     rg: req.body.rg,
