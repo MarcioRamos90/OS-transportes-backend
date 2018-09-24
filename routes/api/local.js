@@ -9,8 +9,8 @@ const isEmpyt = require("../../validation/is-empty");
 // @access Public
 router.get("/", (req, res) => {
   filter = {};
-  req.query.name ? (filter.local = new RegExp(escapeRegex(req.query.local), "gi")) : "";
-  req.query.tel ? (filter.adress = new RegExp(escapeRegex(req.query.adress), "gi")) : "";
+  req.query.destiny ? (filter.local = new RegExp(escapeRegex(req.query.destiny), "gi")) : "";
+  req.query.adress ? (filter.adress = new RegExp(escapeRegex(req.query.adress), "gi")) : "";
 
   Local.find(filter, (err, doc) => {
     if (err) return res.status(400).json({ error: "Erro na busca" });
@@ -41,7 +41,7 @@ router.post("/", (req, res) => {
       return res.status(400).json({ local: "Local já existe" });
 
     const newLocal = new Local({
-      local: req.body.local,
+      local: req.body.destiny,
       adress: req.body.adress,
     });
 
@@ -55,18 +55,15 @@ router.post("/", (req, res) => {
 // @route PUT api/local/edit
 // @desc update Local
 // @access Public
-
 router.put("/edit", (req, res) => {
-  const { id } = req.body;
+  const id = req.body.id;
 
-  const local = new Local({
-    local: req.body.local,
+  const localEdit = {
+    local: req.body.destiny,
     adress: req.body.adress,
-  });
+  };
 
-  
-  console.log(local)
-  Driver.findByIdAndUpdate(id, local, (err, doc) => {
+  Local.findByIdAndUpdate(id, localEdit, (err, doc) => {
     if (err)
       return res
         .status(400)
