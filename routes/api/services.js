@@ -22,7 +22,9 @@ router.get("/", (req, res) => {
     ? (filter.id = req.query.code)
     : ""
 	req.query.company
-    ? (filter.company = new RegExp(escapeRegex(req.query.company), "gi"))
+    ? (filter.company = new RegExp(escapeRegex(req.query.company), "gi")) : ""
+  req.query.reserve
+    ? (filter.reserve = new RegExp(escapeRegex(req.query.reserve), "gi"))
     : ""
   req.query.passenger
     ? (filter.passenger = new RegExp(escapeRegex(req.query.passenger), "gi"))
@@ -40,11 +42,10 @@ router.get("/", (req, res) => {
 	const date = {}
 	req.query.start ? date.start = req.query.start : date.start = "2000-01-01"
 	req.query.end ? date.end = req.query.end : date.end = "2030-01-01"
-
-	Service.find({ ...filter, os_date: { $gte: moment(date.start), $lte: moment(date.end) }})
-		.populate("driver", ["name"])
+	console.log(date)
+	Service.find({...filter, os_date: { $gte: moment(date.start ), $lte: moment(date.end) }})
 		.then(doc => {
-			res.json(doc)
+			res.status(200).json(doc)
 		})
 		.catch(err =>{
 			res.status(400).json(err)
@@ -79,22 +80,26 @@ router.post('/', (req, res) => {
 	}
 
 	const newService = new Service({})
-	req.body.os_date ? newService.os_date = req.body.os_date : '';
+	req.body.date ? newService.os_date = req.body.date : '';
 	req.body.requester ? newService.requester = req.body.requester : '';
+	req.body.reserve ? newService.reserve = req.body.reserve : '';
 	req.body.passenger ? passenger(req.body.passenger, newService) : '';
 	req.body.local ? newService.local = req.body.local : '';
 	req.body.car ? newService.car = req.body.car : '';
 	req.body.driver ? newService.driver = req.body.driver : '';
 	req.body.company ? newService.company = req.body.company : '';
 	req.body.observation ? newService.observation = req.body.observation : '';
-	req.body.status === "true" ? (newService.status = true) : '';
+	req.body.status == "" ? (newService.status = true) : '';
   req.body.status === "false" ? (newService.status = false) : '';
 
-  console.log('novo serv: ' + newService)
+  
 	newService.save()
-		.then(doc => res.json(doc))
+		.then(doc => {
+			res.json(doc)
+			console.log('novo doc: ' + doc)
+		})
 		.catch(err => {
-			console.log('errox')
+			console.log(err)
 			res.status(400).json(err)
 
 		});
@@ -119,6 +124,7 @@ router.put('/', (req, res) => {
 	req.body.passenger ? passenger(req.body.passenger, editService) : '';
 	req.body.os_date ? editService.os_date = req.body.os_date : '';
 	req.body.requester ? editService.requester = req.body.requester : '';
+	req.body.reserve ? editService.reserve = req.body.reserve : '';
 	req.body.local ? editService.local = req.body.local : '';
 	req.body.car ? editService.car = req.body.car : '';
 	req.body.driver ? editService.driver = req.body.driver : '';

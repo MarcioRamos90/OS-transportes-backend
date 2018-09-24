@@ -7,8 +7,9 @@ const uniqueValidator = require('mongoose-unique-validator')
 const ServiceSchema = new Schema({
   id: {type: Number, unique:true, index: true },
   company: { type: String, required: false },
-  os_date: Date,
+  os_date: { type: Date, required: false },
   requester: { type: String, required: false },
+  reserve: { type: String, required: false },
   passenger: [{ type: String, required: false }],  
   local: [
     {
