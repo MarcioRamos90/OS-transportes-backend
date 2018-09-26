@@ -1,17 +1,17 @@
 const express = require("express");
 
 const router = express.Router();
-const Requester = require("../../models/Requester");
+const Passenger = require("../../models/Passenger");
 const isEmpyt = require("../../validation/is-empty");
 
-// @route GET api/requester/
+// @route GET api/passenger/
 // @desc get all or filter
 // @access Public
 router.get("/", (req, res) => {
   filter = {};
   req.query.name ? (filter.name = new RegExp(escapeRegex(req.query.name), "gi")) : "";
 
-  Requester.find(filter, (err, doc) => {
+  Passenger.find(filter, (err, doc) => {
     if (err) return res.status(400).json({ error: "Erro na busca" });
     res.json(doc);
   });
@@ -21,46 +21,46 @@ function escapeRegex(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-// @route GET api/requester/:id
+// @route GET api/passenger/:id
 // @desc get by id
 // @access Public
 router.get("/:id", (req, res) => {
-  Requester.findById(req.params.id, (err, doc) => {
+  Passenger.findById(req.params.id, (err, doc) => {
     if (err) return res.status(400).json({ error: "Erro na busca" });
     res.json(doc);
   });
 });
 
-// @route POST api/requester/
+// @route POST api/passenger/
 // @desc add new 
 // @access Public
 router.post("/", (req, res) => {
-  Requester.find({ name: req.body.name }).then(doc => {
+  Passenger.find({ name: req.body.name }).then(doc => {
     if (!isEmpyt(doc))
-      return res.status(400).json({ error: "Solicitante já existe" });
+      return res.status(400).json({ error: "Passageiro já existe" });
 
-    const newRequester = new Requester({
+    const newPassenger = new Passenger({
       name: req.body.name
     });
 
-    newRequester
+    newPassenger
       .save()
       .then(Local => res.json({ msg: "Adicionado com sucesso" }))
       .catch(err => console.log(err));
   });
 });
 
-// @route PUT api/requester/edit
+// @route PUT api/passenger/edit
 // @desc update 
 // @access Public
 router.put("/edit", (req, res) => {
   const id = req.body.id;
 
-  const editRequester = {
+  const editPassenger = {
     name: req.body.name
   };
 
-  Requester.findByIdAndUpdate(id, editRequester, (err, doc) => {
+  Passenger.findByIdAndUpdate(id, editPassenger, (err, doc) => {
     if (err)
       return res
         .status(400)

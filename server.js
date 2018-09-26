@@ -10,6 +10,7 @@ const companies = require("./routes/api/companies");
 const drivers = require("./routes/api/drivers");
 const cars = require("./routes/api/cars");
 const local = require("./routes/api/local");
+const passenger = require("./routes/api/passenger");
 const services = require("./routes/api/services");
 const allowCors = require("./config/cors");
 
@@ -44,6 +45,8 @@ app.use("/api/requesters", requesters);
 app.use("/api/drivers", drivers);
 app.use("/api/cars", cars);
 app.use("/api/local", local);
+app.use("/api/passenger", passenger);
+app.use("/api/requesters", requesters);
 
 
 const port = process.env.PORT || 5000;
