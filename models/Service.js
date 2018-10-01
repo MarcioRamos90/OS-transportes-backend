@@ -6,23 +6,32 @@ const uniqueValidator = require('mongoose-unique-validator')
 
 const ServiceSchema = new Schema({
   id: {type: Number, unique:true, index: true },
-  company: { type: String, required: false },
+  company: [{
+      name: { type: String, required: false }
+    }],
   os_date: { type: Date, required: false },
-  requester: { type: String, required: false },
+  hour: { type: String, required: false },
+  requesters: [
+    {name: { type: String, required: false }}
+    ],
   reserve: { type: String, required: false },
-  passenger: [{ type: String, required: false }],  
-  local: [
+  passengers: [
+    {name: { type: String, required: false }}
+    ],  
+  destinys: [
     {
-      destiny: { type: String, required: false },
+      local: { type: String, required: false },
       adress: { type: String, required: false }
     }
   ],
   observation: { type: String, required: false },
-  car: { type: String, required: false },
-  driver: {
-    type: Schema.Types.ObjectId,
-    ref: "drivers"
-  },
+  car:[{ 
+      name:{ type: String, required: false }
+    }],
+  driver: [{
+      name: { type: String, required: false }
+    }
+  ],
   status: {type: Boolean, default: true}
 },{ timestamps: true });
 

@@ -18,20 +18,16 @@ router.get("/", (req, res) => {
 	
 	filter = {};
 
-	req.query.code
-    ? (filter.id = req.query.code)
-    : ""
-	req.query.company
-    ? (filter.company = new RegExp(escapeRegex(req.query.company), "gi")) : ""
-  req.query.reserve
-    ? (filter.reserve = new RegExp(escapeRegex(req.query.reserve), "gi"))
-    : ""
-  req.query.passenger
-    ? (filter.passenger = new RegExp(escapeRegex(req.query.passenger), "gi"))
-    : "";
-  req.query.car
-    ? (filter.car = new RegExp(escapeRegex(req.query.car), "gi"))
-    : "";
+  req.query.code ? filter.id =  req.query.code : "";
+
+	const company =  new RegExp(escapeRegex(req.query.company), "gi")
+  const reserve = new RegExp(escapeRegex(req.query.reserve), "gi")
+  const passenger = new RegExp(escapeRegex(req.query.passenger), "gi")
+  const requester = new RegExp(escapeRegex(req.query.requester), "gi")
+  const car = new RegExp(escapeRegex(req.query.car), "gi")
+  const driver = new RegExp(escapeRegex(req.query.driver), "gi")
+  const hour = new RegExp(escapeRegex(req.query.hour), "gi")
+
   req.query.status === "true"
     ? (filter.status = true)
     : ''
@@ -39,11 +35,24 @@ router.get("/", (req, res) => {
     ? (filter.status = false)
     : ''
 
+  // console.log(filter)
 	const date = {}
 	req.query.start ? date.start = req.query.start : date.start = "2000-01-01"
 	req.query.end ? date.end = req.query.end : date.end = "2030-01-01"
-	console.log(date)
-	Service.find({...filter, os_date: { $gte: moment(date.start ), $lte: moment(date.end) }})
+
+	//os_date: { $gte: moment(date.start ), $lte: moment(date.end) }
+	Service.find(
+		{
+			...filter,
+			'company.name': company, 
+			'driver.name': driver, 
+			'passengers.name': passenger,
+			'car.name': car,
+			'reserve': reserve,
+			'hour': hour,
+			'requesters.name': requester,
+			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
+		})
 		.then(doc => {
 			res.status(200).json(doc)
 		})
@@ -75,63 +84,64 @@ router.post('/', (req, res) => {
 	const passenger = function(obj, newService) {
 		obj.forEach( function(element, index) {
 
-			newService.passenger.push(element)
+			newService.passengers.push(element)
 		});
 	}
 
 	const newService = new Service({})
-	req.body.date ? newService.os_date = req.body.date : '';
-	req.body.requester ? newService.requester = req.body.requester : '';
-	req.body.reserve ? newService.reserve = req.body.reserve : '';
-	req.body.passenger ? passenger(req.body.passenger, newService) : '';
-	req.body.local ? newService.local = req.body.local : '';
-	req.body.car ? newService.car = req.body.car : '';
-	req.body.driver ? newService.driver = req.body.driver : '';
+
 	req.body.company ? newService.company = req.body.company : '';
+	req.body.passenger ? newService.passengers = req.body.passenger  : '';
+	req.body.date ? newService.os_date = req.body.date : '';
+	req.body.requester ? newService.requesters = req.body.requester : '';
+	req.body.reserve ? newService.reserve = req.body.reserve : '';
+	req.body.driver ? newService.driver = req.body.driver : '';
+	req.body.car ? newService.car = req.body.car : '';
+	req.body.destiny ? newService.destinys = req.body.destiny : '';
+	req.body.hour ? newService.hour = req.body.hour : '';
 	req.body.observation ? newService.observation = req.body.observation : '';
 	req.body.status == "" ? (newService.status = true) : '';
   req.body.status === "false" ? (newService.status = false) : '';
 
-  
 	newService.save()
 		.then(doc => {
 			res.json(doc)
-			console.log('novo doc: ' + doc)
 		})
 		.catch(err => {
-			console.log(err)
 			res.status(400).json(err)
-
 		});
 })
 
-// @route PUT api/services/
+// @route PUT api/services/edit
 // @desc put edit service
 // @access Public
-router.put('/', (req, res) => {
+router.put('/edit', (req, res) => {
 	
-
 	const passenger = function(obj, newService) {
 		obj.forEach( function(element, index) {
 
-			editService.passenger.push(element)
+			editService.passengers.push(element)
 		});
 	}
 
 	const { id } = req.body;
 	const editService = {};
-	editService.passenger = new Array();
-	req.body.passenger ? passenger(req.body.passenger, editService) : '';
-	req.body.os_date ? editService.os_date = req.body.os_date : '';
-	req.body.requester ? editService.requester = req.body.requester : '';
-	req.body.reserve ? editService.reserve = req.body.reserve : '';
-	req.body.local ? editService.local = req.body.local : '';
-	req.body.car ? editService.car = req.body.car : '';
-	req.body.driver ? editService.driver = req.body.driver : '';
+	editService.passengers = new Array();
+
 	req.body.company ? editService.company = req.body.company : '';
-	req.body.observation ? editService.observation = req.body.observation : '';
-	req.body.status === "true" ? (editService.status = true) : '';
+	req.body.passenger ? editService.passengers = req.body.passenger  : '';
+	req.body.date ? editService.os_date = req.body.date : '';
+	req.body.requester ? editService.requesters = req.body.requester : '';
+	
+	req.body.driver ? editService.driver = req.body.driver : '';
+	req.body.car ? editService.car = req.body.car : '';
+	req.body.destiny ? editService.destinys = req.body.destiny : '';
+	req.body.status == "" ? (editService.status = true) : '';
   req.body.status === "false" ? (editService.status = false) : '';
+
+  editService.observation = req.body.observation
+  editService.hour = req.body.hour
+  editService.reserve = req.body.reserve
   
 	Service.findByIdAndUpdate(id, editService, (err, doc) => {
     if (err)
@@ -139,7 +149,7 @@ router.put('/', (req, res) => {
         .status(400)
         .json({ update: "Não foi possivel realizar a alteração" });
 
-    return res.json({ carro: "Alteração realizada com sucesso!" });
+    return res.json({ msg: "Alteração realizada com sucesso!" });
   });
 })
 

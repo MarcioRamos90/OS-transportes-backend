@@ -99,7 +99,7 @@ router.put("/edit", (req, res) => {
         .status(400)
         .json({ update: "Não foi possivel realizar a alteração" });
 
-    return res.json({ carro: "Alteração realizada com sucesso!" });
+    return res.json({ Motorista: "Alteração realizada com sucesso!" });
   });
 });
 

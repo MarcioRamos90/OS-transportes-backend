@@ -26,7 +26,6 @@ router.get("/", (req, res) => {
     ? (filter.active = true)
     : (filter.active = false);
 
-  console.log(filter)
   Companie.find(filter, (err, doc) => {
     if (err) return res.status(400).json(err);
 
