@@ -35,7 +35,8 @@ const ServiceSchema = new Schema({
       name:{ type: String, required: false }
     }],
   driver: [{
-      name: { type: String, required: false }
+      name: { type: String, required: false },
+      bilingue: { type: Boolean, default: false },
     }
   ],
   status_receive: {type: Boolean, default: false},

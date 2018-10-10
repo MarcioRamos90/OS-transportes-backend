@@ -86,7 +86,6 @@ function escapeRegex(text) {
 router.get("/:id", (req, res) => {
   Service.findById(req.params.id, (err, doc) => {
     if (err) return res.status(400).json({ error: "Erro na busca" });
-    ("");
     res.json(doc);
   });
 });
