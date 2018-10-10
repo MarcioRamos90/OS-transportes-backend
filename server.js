@@ -12,6 +12,7 @@ const cars = require("./routes/api/cars");
 const local = require("./routes/api/local");
 const passenger = require("./routes/api/passenger");
 const services = require("./routes/api/services");
+const receive = require("./routes/api/receive");
 const allowCors = require("./config/cors");
 
 const app = express();
@@ -39,6 +40,7 @@ require("./config/passport")(passport);
 // Use Routes
 
 app.use("/api/services", services)
+app.use("/api/receives", receive)
 app.use("/api/users", users);
 app.use("/api/companies", companies);
 app.use("/api/requesters", requesters);

@@ -1,14 +1,20 @@
 const mongoose = require("mongoose");
+require('mongoose-double')(mongoose);
+
 const sequence = require('mongoose-sequence')(mongoose)
 const Schema = mongoose.Schema;
 const moment = require("moment");
 const uniqueValidator = require('mongoose-unique-validator')
+
+var SchemaTypes = mongoose.Schema.Types;
 
 const ServiceSchema = new Schema({
   id: {type: Number, unique:true, index: true },
   company: [{
       name: { type: String, required: false }
     }],
+  value_receive: { type: SchemaTypes.Double },
+  value_to_pay: { type: SchemaTypes.Double },
   os_date: { type: Date, required: false },
   hour: { type: String, required: false },
   requesters: [
@@ -32,6 +38,8 @@ const ServiceSchema = new Schema({
       name: { type: String, required: false }
     }
   ],
+  status_receive: {type: Boolean, default: false},
+  status_pay: {type: Boolean, default: false},
   status: {type: Boolean, default: true}
 },{ timestamps: true });
 

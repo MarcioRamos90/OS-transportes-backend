@@ -20,13 +20,23 @@ router.get("/", (req, res) => {
 
   req.query.code ? filter.id =  req.query.code : "";
 
-	const company =  new RegExp(escapeRegex(req.query.company), "gi")
-  const reserve = new RegExp(escapeRegex(req.query.reserve), "gi")
-  const passenger = new RegExp(escapeRegex(req.query.passenger), "gi")
-  const requester = new RegExp(escapeRegex(req.query.requester), "gi")
-  const car = new RegExp(escapeRegex(req.query.car), "gi")
-  const driver = new RegExp(escapeRegex(req.query.driver), "gi")
-  const hour = new RegExp(escapeRegex(req.query.hour), "gi")
+  const company = /[\w. ]+/
+  const reserve = /[\w. ]+/
+  const passenger = /[\w. ]+/
+  const requester = /[\w. ]+/
+  const driver = /[\w. ]+/
+  const car = /[\w. ]+/
+  const hour = /[\w. ]+/
+
+
+	req.query.company ? company = new RegExp(escapeRegex(req.query.company), "gi") : ''
+  req.query.reserve ? reserve = new RegExp(escapeRegex(req.query.reserve), "gi") : ''
+  req.query.passenger ? passenger = new RegExp(escapeRegex(req.query.passenger), "gi") : ''
+  req.query.requester ? requester = new RegExp(escapeRegex(req.query.requester), "gi") : ''
+  req.query.car ? car = new RegExp(escapeRegex(req.query.car), "gi") : ''
+  req.query.driver ? driver = new RegExp(escapeRegex(req.query.driver), "gi") : ''
+  req.query.hour ? hour = new RegExp(escapeRegex(req.query.hour), "gi") : ''
+
 
   req.query.status === "true"
     ? (filter.status = true)
@@ -62,7 +72,12 @@ router.get("/", (req, res) => {
 });
 
 function escapeRegex(text) {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+	if(text){
+  	return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
+	}
+	else{
+		return false
+	}
 }
 
 // @route GET api/services/:id
@@ -102,6 +117,11 @@ router.post('/', (req, res) => {
 	req.body.observation ? newService.observation = req.body.observation : '';
 	req.body.status == "" ? (newService.status = true) : '';
   req.body.status === "false" ? (newService.status = false) : '';
+  
+  req.body.value_receive 
+  	? newService.value_receive = req.body.value_receive : newService.value_receive = 0
+  req.body.value_to_pay 
+  	? newService.value_to_pay = req.body.value_to_pay : newService.value_to_pay = 0
 
 	newService.save()
 		.then(doc => {
