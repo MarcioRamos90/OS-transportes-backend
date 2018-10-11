@@ -20,23 +20,13 @@ router.get("/", (req, res) => {
 
   req.query.code ? filter.id =  req.query.code : "";
 
-  const company = /[\w. ]+/
-  const reserve = /[\w. ]+/
-  const passenger = /[\w. ]+/
-  const requester = /[\w. ]+/
-  const driver = /[\w. ]+/
-  const car = /[\w. ]+/
-  const hour = /[\w. ]+/
-
-
-	req.query.company ? company = new RegExp(escapeRegex(req.query.company), "gi") : ''
-  req.query.reserve ? reserve = new RegExp(escapeRegex(req.query.reserve), "gi") : ''
-  req.query.passenger ? passenger = new RegExp(escapeRegex(req.query.passenger), "gi") : ''
-  req.query.requester ? requester = new RegExp(escapeRegex(req.query.requester), "gi") : ''
-  req.query.car ? car = new RegExp(escapeRegex(req.query.car), "gi") : ''
-  req.query.driver ? driver = new RegExp(escapeRegex(req.query.driver), "gi") : ''
-  req.query.hour ? hour = new RegExp(escapeRegex(req.query.hour), "gi") : ''
-
+  req.query.company.length > 0 ? filter = { 'company.name': new RegExp(escapeRegex(req.query.company), "gi") } : ''
+  req.query.reserve.length > 0 ? filter = { ...filter, 'reserve': new RegExp(escapeRegex(req.query.reserve), "gi") } : ''
+  req.query.passenger.length > 0 ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
+  req.query.requester.length > 0 ? filter = { ...filter, 'requesters.name': new RegExp(escapeRegex(req.query.requester), "gi") } : ''
+  req.query.driver.length > 0 ? filter = { ...filter, 'driver.name': new RegExp(escapeRegex(req.query.driver), "gi") } : ''
+  req.query.car.length > 0 ? filter = { ...filter, 'car.name': new RegExp(escapeRegex(req.query.car), "gi") } : ''
+  req.query.hour.length > 0 ? filter = { ...filter, 'hour': new RegExp(escapeRegex(req.query.hour), "gi") } : ''
 
   req.query.status === "true"
     ? (filter.status = true)
@@ -54,13 +44,6 @@ router.get("/", (req, res) => {
 	Service.find(
 		{
 			...filter,
-			'company.name': company, 
-			'driver.name': driver, 
-			'passengers.name': passenger,
-			'car.name': car,
-			'reserve': reserve,
-			'hour': hour,
-			'requesters.name': requester,
 			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
 		})
 		.then(doc => {
@@ -104,7 +87,7 @@ router.post('/', (req, res) => {
 
 	const newService = new Service({})
 
-	req.body.company ? newService.company = req.body.company : '';
+	req.body.company ? newService.company = req.body.company : newService.company = {};
 	req.body.passenger ? newService.passengers = req.body.passenger  : '';
 	req.body.date ? newService.os_date = req.body.date : '';
 	req.body.requester ? newService.requesters = req.body.requester : '';
