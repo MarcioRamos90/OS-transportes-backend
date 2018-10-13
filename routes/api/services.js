@@ -5,6 +5,7 @@ const isEmpyt = require("../../validation/is-empty");
 
 const Service = require('../../models/Service');
 const moment = require('moment')
+const isEmpty = require('../../validation/is-empty')
 
 // To reset the id
 // Service.counterReset('id', function(err){})
@@ -20,13 +21,13 @@ router.get("/", (req, res) => {
 
   req.query.code ? filter.id =  req.query.code : "";
 
-  req.query.company.length > 0 ? filter = { 'company.name': new RegExp(escapeRegex(req.query.company), "gi") } : ''
-  req.query.reserve.length > 0 ? filter = { ...filter, 'reserve': new RegExp(escapeRegex(req.query.reserve), "gi") } : ''
-  req.query.passenger.length > 0 ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
-  req.query.requester.length > 0 ? filter = { ...filter, 'requesters.name': new RegExp(escapeRegex(req.query.requester), "gi") } : ''
-  req.query.driver.length > 0 ? filter = { ...filter, 'driver.name': new RegExp(escapeRegex(req.query.driver), "gi") } : ''
-  req.query.car.length > 0 ? filter = { ...filter, 'car.name': new RegExp(escapeRegex(req.query.car), "gi") } : ''
-  req.query.hour.length > 0 ? filter = { ...filter, 'hour': new RegExp(escapeRegex(req.query.hour), "gi") } : ''
+  !isEmpty(req.query.company) ? filter = { 'company.name': new RegExp(escapeRegex(req.query.company), "gi") } : ''
+  !isEmpty(req.query.reserve) ? filter = { ...filter, 'reserve': new RegExp(escapeRegex(req.query.reserve), "gi") } : ''
+  !isEmpty(req.query.passenger) ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
+  !isEmpty(req.query.requester) ? filter = { ...filter, 'requesters.name': new RegExp(escapeRegex(req.query.requester), "gi") } : ''
+  !isEmpty(req.query.driver) ? filter = { ...filter, 'driver.name': new RegExp(escapeRegex(req.query.driver), "gi") } : ''
+  !isEmpty(req.query.car) ? filter = { ...filter, 'car.name': new RegExp(escapeRegex(req.query.car), "gi") } : ''
+  !isEmpty(req.query.hour) ? filter = { ...filter, 'hour': new RegExp(escapeRegex(req.query.hour), "gi") } : ''
 
   req.query.status === "true"
     ? (filter.status = true)
