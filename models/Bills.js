@@ -35,6 +35,10 @@ const BillSchema = new Schema({
   	type: String,
   	enum: ["receive", "payment"],
   	default: "receive"
+  },
+  checked: { 
+    type: Boolean, 
+    default: false 
   }
 },{ timestamps: true });
 

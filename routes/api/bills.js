@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const isEmpty = require('../../validation/is-empty')
-
+const moment = require('moment')
 // const isEmpyt = require("../../validation/is-empty");
 
 const Bills = require('../../models/Bills');
@@ -19,7 +19,6 @@ function escapeRegex(text) {
   }
 }
 
-const getService = require('../functions/getServices')
 
 // @route GET api/bills/
 // @desc get all or filter bills
@@ -36,8 +35,12 @@ router.get("/", async (req, res)  =>  {
   !isEmpty(req.query.os_date) ? filter.os_date = new RegExp(escapeRegex(req.query.os_date), "gi") : ''
   !isEmpty(req.query.status) ? filter.status = new RegExp(escapeRegex(req.query.status), "gi") : ''
   !isEmpty(req.query.type) ? filter.type = new RegExp(escapeRegex(req.query.type), "gi") : ''
+  
+  const date = {}
+  req.query.start ? date.start = req.query.start : date.start = "2000-01-01"
+  req.query.end ? date.end = req.query.end : date.end = "2030-01-01"
 
-  Bills.find(filter).then(doc => {
+  Bills.find({...filter, os_date: { $gte: moment(date.start ), $lte: moment(date.end)} }).then(doc => {
     res.json(doc)
   }).catch(err => {
     res.status(400).json(err)
@@ -96,18 +99,17 @@ router.post('/', (req, res) => {
 router.put("/edit", (req, res) => {
   const id = req.body.id;
 
-  const bilssEdit = {}
+  const billsEdit = {}
   
-  !isEmpty(req.body.service) ? bilssEdit.service = req.body.service : '';
-  !isEmpty(req.body.os_code) ? bilssEdit.os_code = req.body.os_code  : '';
-  !isEmpty(req.body.name) ? bilssEdit.name = req.body.name  : '';
-  !isEmpty(req.body.os_date) ? bilssEdit.os_date = req.body.os_date  : '';
-  !isEmpty(req.body.value) ? bilssEdit.value = req.body.value  : '';
-  !isEmpty(req.body.status) ? bilssEdit.status = req.body.status : '';
-  !isEmpty(req.body.type) ? bilssEdit.type = req.body.type  : '';
+  !isEmpty(req.body.service) ? billsEdit.service = req.body.service : '';
+  !isEmpty(req.body.os_code) ? billsEdit.os_code = req.body.os_code  : '';
+  !isEmpty(req.body.name) ? billsEdit.name = req.body.name  : '';
+  !isEmpty(req.body.os_date) ? billsEdit.os_date = req.body.os_date  : '';
+  !isEmpty(req.body.value) ? billsEdit.value = req.body.value  : '';
+  !isEmpty(req.body.status) ? billsEdit.status = req.body.status : '';
+  !isEmpty(req.body.type) ? billsEdit.type = req.body.type  : '';
 
-  console.log(getEnumStatus(1))
-  Bills.findByIdAndUpdate(id, bilssEdit , (err, doc) => {
+  Bills.findByIdAndUpdate(id, billsEdit , (err, doc) => {
     if (err)
       return res
         .status(400)
