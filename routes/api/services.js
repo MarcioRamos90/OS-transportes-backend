@@ -47,6 +47,7 @@ router.get("/", (req, res) => {
 			...filter,
 			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
 		})
+		.sort('-os_date')
 		.then(doc => {
 			res.status(200).json(doc)
 		})
