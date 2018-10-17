@@ -7,6 +7,8 @@ const Service = require('../../models/Service');
 const moment = require('moment')
 const isEmpty = require('../../validation/is-empty')
 
+const Bills = require('../../models/Bills');
+
 // To reset the id
 // Service.counterReset('id', function(err){})
 
@@ -76,6 +78,58 @@ router.get("/:id", (req, res) => {
 });
 
 // @route POST api/services/
+// @desc post service alter filed finalizad of Service and create 2 Bill, Receive type andpayment type
+// @access Public
+router.post('/finish/:id', (req, res) => {
+
+	Service.findById(req.params.id, (err, doc) => {
+		if (err) return res.status(400).json({error: "Erro na busca"});
+
+		// doc.finalized = true
+
+		console.log(doc)
+
+		doc.save((err, updatedService) => {
+			if (err) return res.status(400).json({error: "Erro ao salvar"})
+				
+			const VarBill = {}
+
+			VarBill.service = doc._id
+			VarBill.name = doc.company[0].name
+			VarBill.requesters = doc.requesters
+			VarBill.os_code = doc.id
+			VarBill.passengers = doc.passengers
+			VarBill.destinys = doc.destinys
+			VarBill.os_date = doc.os_date
+			VarBill.reserve = doc.reserve
+			VarBill.car = doc.car
+			VarBill.reserve = doc.reserve
+
+
+			const newBillReceive = new Bill({...VarBill})
+
+			newBillReceive.save((err, newBill) => {
+				if (err) return res.status(400).json({error: "Erro ao Criar Receive"})
+
+				VarBill.name = doc.driver[0].name 
+				VarBill.type = "payment"
+
+				const newBillPayment = new Bill({...VarBill})
+
+				newBillPayment.save((err, newBill) => {
+					if (err) return res.status(400).json({error: "Erro ao Criar Payment"})
+
+						res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
+				})
+
+			})
+				
+
+		})
+	})
+})
+
+// @route POST api/services/
 // @desc post new service
 // @access Public
 router.post('/', (req, res) => {
@@ -89,7 +143,7 @@ router.post('/', (req, res) => {
 
 	const newService = new Service({})
 
-	req.body.company ? newService.company = req.body.company : newService.company = {};
+	req.body.company ? newService.company = req.body.company : '';
 	req.body.passenger ? newService.passengers = req.body.passenger  : '';
 	req.body.date ? newService.os_date = req.body.date : '';
 	req.body.requester ? newService.requesters = req.body.requester : '';

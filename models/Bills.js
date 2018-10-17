@@ -39,7 +39,39 @@ const BillSchema = new Schema({
   checked: { 
     type: Boolean, 
     default: false 
-  }
+  },
+  destinys: [
+    {
+      local: { 
+        type: String, required: false 
+      },
+      adress: { 
+        type: String, required: false 
+      }
+    }
+  ],
+  passengers: [
+    {
+      name: { 
+        type: String, required: false 
+      }
+    }
+  ],
+  reserve: { 
+    type: String, required: false 
+  },
+  requesters: [
+    {
+      name: { 
+        type: String, required: false 
+      }
+    }
+  ],
+  car:[{ 
+      name:{ 
+        type: String, required: false 
+      }
+    }],
 },{ timestamps: true });
 
 // ReceiveSchema.plugin(sequence, {inc_field: 'id'})
