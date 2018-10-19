@@ -85,9 +85,7 @@ router.post('/finish/:id', (req, res) => {
 	Service.findById(req.params.id, (err, doc) => {
 		if (err) return res.status(400).json({error: "Erro na busca"});
 
-		// doc.finalized = true
-
-		console.log(doc)
+		doc.finalized = true
 
 		doc.save((err, updatedService) => {
 			if (err) return res.status(400).json({error: "Erro ao salvar"})
