@@ -19,6 +19,10 @@ const BillSchema = new Schema({
   	type: String, 
   	required: false 
   },
+  company: { 
+    type: String, 
+    required: false 
+  },
   os_date: { 
   	type: Date, 
   	required: false 

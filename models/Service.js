@@ -25,6 +25,9 @@ const ServiceSchema = new Schema({
   hour: { 
     type: String, required: false 
   },
+  custCenter: { 
+    type: String, required: false 
+  },
   requesters: [
     {
       name: { 

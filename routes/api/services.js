@@ -49,7 +49,7 @@ router.get("/", (req, res) => {
 			...filter,
 			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
 		})
-		.sort('-os_date')
+		.sort('os_date')
 		.then(doc => {
 			res.status(200).json(doc)
 		})
@@ -111,6 +111,7 @@ router.post('/finish/:id', (req, res) => {
 
 				VarBill.name = doc.driver[0].name 
 				VarBill.type = "payment"
+				VarBill.company = doc.company[0].name
 
 				const newBillPayment = new Bill({...VarBill})
 
@@ -148,6 +149,7 @@ router.post('/', (req, res) => {
 	req.body.reserve ? newService.reserve = req.body.reserve : '';
 	req.body.driver ? newService.driver = req.body.driver : '';
 	req.body.car ? newService.car = req.body.car : '';
+	req.body.custCenter ? newService.custCenter = req.body.custCenter : '';
 	req.body.destiny ? newService.destinys = req.body.destiny : '';
 	req.body.hour ? newService.hour = req.body.hour : '';
 	req.body.observation ? newService.observation = req.body.observation : '';
@@ -194,6 +196,7 @@ router.put('/edit', (req, res) => {
 	req.body.destiny ? editService.destinys = req.body.destiny : '';
 	req.body.status == "" ? (editService.status = true) : '';
   req.body.status === "false" ? (editService.status = false) : '';
+  req.body.custCenter ? editService.custCenter = req.body.custCenter : '';
 
   editService.observation = req.body.observation
   editService.hour = req.body.hour
