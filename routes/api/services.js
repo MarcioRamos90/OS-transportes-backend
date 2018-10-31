@@ -37,13 +37,12 @@ router.get("/", (req, res) => {
    req.query.status === "false"
     ? (filter.status = false)
     : ''
+  filter.finalized = req.query.finalized;
 
-  // console.log(filter)
 	const date = {}
 	req.query.start ? date.start = req.query.start : date.start = "2000-01-01"
 	req.query.end ? date.end = req.query.end : date.end = "2030-01-01"
 
-	//os_date: { $gte: moment(date.start ), $lte: moment(date.end) }
 	Service.find(
 		{
 			...filter,
@@ -103,13 +102,12 @@ router.post('/finish/:id', (req, res) => {
 			VarBill.car = doc.car
 			VarBill.reserve = doc.reserve
 
-
 			const newBillReceive = new Bill({...VarBill})
 
 			newBillReceive.save((err, newBill) => {
 				if (err) return res.status(400).json({error: "Erro ao Criar Receive"})
 
-				VarBill.name = doc.driver[0].name 
+				VarBill.name = doc.driver[0].name
 				VarBill.type = "payment"
 				VarBill.company = doc.company[0].name
 
@@ -144,7 +142,7 @@ router.post('/', (req, res) => {
 
 	req.body.company ? newService.company = req.body.company : '';
 	req.body.passenger ? newService.passengers = req.body.passenger  : '';
-	req.body.date ? newService.os_date = req.body.date : '';
+	newService.os_date = req.body.date || Date.now();
 	req.body.requester ? newService.requesters = req.body.requester : '';
 	req.body.reserve ? newService.reserve = req.body.reserve : '';
 	req.body.driver ? newService.driver = req.body.driver : '';
@@ -168,6 +166,75 @@ router.post('/', (req, res) => {
 		.catch(err => {
 			res.status(400).json(err)
 		});
+})
+
+// @route PUT api/services/cancel
+// @desc put cancel service
+// @access Public
+router.put('/cancel', (req, res) => {
+  const { id } = req.body;
+
+  const editService = {};
+  editService.passengers = new Array();
+
+	req.body.company ? editService.company = req.body.company : '';
+	req.body.passenger ? editService.passengers = req.body.passenger  : '';
+	req.body.date ? editService.os_date = req.body.date : '';
+	req.body.requester ? editService.requesters = req.body.requester : '';
+	req.body.driver ? editService.driver = req.body.driver : '';
+	req.body.car ? editService.car = req.body.car : '';
+	req.body.destiny ? editService.destinys = req.body.destiny : '';
+	req.body.message ? editService.message = req.body.message : ''; // Add Message
+  editService.status = false //Cancel OS
+  req.body.custCenter ? editService.custCenter = req.body.custCenter : '';
+  editService.observation = req.body.observation
+  editService.hour = req.body.hour
+  editService.reserve = req.body.reserve
+
+	Service.findByIdAndUpdate(id, editService, (err, doc) => {
+    if (!isEmpty(err))
+      return res
+        .status(400)
+        .json({error: 'erro no cancelamento'});
+
+    if(!req.body.createBill)
+    	return res.json({ msg: "Cancelamento realizado com sucesso!" });
+
+    if(req.body.createBill){
+    	const VarBill = {}
+
+			VarBill.service = doc._id
+			VarBill.name = doc.company[0].name
+			VarBill.requesters = doc.requesters
+			VarBill.os_code = doc.id
+			VarBill.passengers = doc.passengers
+			VarBill.destinys = doc.destinys
+			VarBill.os_date = doc.os_date
+			VarBill.reserve = doc.reserve
+			VarBill.car = doc.car
+			VarBill.reserve = doc.reserve
+			VarBill.value = req.body.valuetoReceive
+
+			const newBillReceive = new Bill({...VarBill})
+			
+			newBillReceive.save((err, newBill) => {
+				if (!isEmpty(err)) return res.status(400).json({error: "Erro ao Criar Receive"})
+
+				VarBill.name = doc.driver[0].name
+				VarBill.type = "payment"
+				VarBill.company = doc.company[0].name
+				VarBill.value = req.body.valuetoPay
+
+				const newBillPayment = new Bill({...VarBill})
+
+				newBillPayment.save((err, newBill) => {
+					if (!isEmpty(err)) return res.status(400).json({error: "Erro ao Criar Payment"})
+
+					return res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
+				});
+    	});
+  	}
+  });
 })
 
 // @route PUT api/services/edit
@@ -200,13 +267,13 @@ router.put('/edit', (req, res) => {
 
   editService.observation = req.body.observation
   editService.hour = req.body.hour
-  editService.reserve = req.body.reserve
+  editService.reserve = req.body.reserve  
   
 	Service.findByIdAndUpdate(id, editService, (err, doc) => {
     if (err)
       return res
         .status(400)
-        .json({ update: "Não foi possivel realizar a alteração" });
+        .json({ err });
 
     return res.json({ msg: "Alteração realizada com sucesso!" });
   });

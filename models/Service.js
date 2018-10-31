@@ -38,6 +38,9 @@ const ServiceSchema = new Schema({
   reserve: { 
     type: String, required: false 
   },
+  message: { 
+    type: String, required: false 
+  },
   passengers: [
     {
       name: { 
@@ -72,14 +75,8 @@ const ServiceSchema = new Schema({
       },
     }
   ],
-  status_receive: {
-    type: Boolean, default: false
-  },
   finalized: { 
     type: Boolean, default: false 
-  },
-  status_pay: {
-    type: Boolean, default: false
   },
   status: {
     type: Boolean, default: true
