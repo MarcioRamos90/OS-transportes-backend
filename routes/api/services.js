@@ -37,7 +37,10 @@ router.get("/", (req, res) => {
    req.query.status === "false"
     ? (filter.status = false)
     : ''
-  filter.finalized = req.query.finalized;
+
+  req.query.finalized === 'true' ? filter.finalized = req.query.finalized : '';
+  req.query.finalized === 'false' ? filter.finalized = req.query.finalized : '';
+  req.query.finalized === '' ? "" : '';
 
 	const date = {}
 	req.query.start ? date.start = req.query.start : date.start = "2000-01-01"
@@ -168,6 +171,7 @@ router.post('/', (req, res) => {
 		});
 })
 
+
 // @route PUT api/services/cancel
 // @desc put cancel service
 // @access Public
@@ -187,6 +191,7 @@ router.put('/cancel', (req, res) => {
 	req.body.message ? editService.message = req.body.message : ''; // Add Message
   editService.status = false //Cancel OS
   req.body.custCenter ? editService.custCenter = req.body.custCenter : '';
+  
   editService.observation = req.body.observation
   editService.hour = req.body.hour
   editService.reserve = req.body.reserve
