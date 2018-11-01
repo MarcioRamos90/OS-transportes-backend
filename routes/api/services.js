@@ -23,6 +23,7 @@ router.get("/", (req, res) => {
 
   req.query.code ? filter.id =  req.query.code : "";
 
+  // filtros em geral
   !isEmpty(req.query.company) ? filter = { 'company.name': new RegExp(escapeRegex(req.query.company), "gi") } : ''
   !isEmpty(req.query.reserve) ? filter = { ...filter, 'reserve': new RegExp(escapeRegex(req.query.reserve), "gi") } : ''
   !isEmpty(req.query.passenger) ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
@@ -31,13 +32,11 @@ router.get("/", (req, res) => {
   !isEmpty(req.query.car) ? filter = { ...filter, 'car.name': new RegExp(escapeRegex(req.query.car), "gi") } : ''
   !isEmpty(req.query.hour) ? filter = { ...filter, 'hour': new RegExp(escapeRegex(req.query.hour), "gi") } : ''
 
-  req.query.status === "true"
-    ? (filter.status = true)
-    : ''
-   req.query.status === "false"
-    ? (filter.status = false)
-    : ''
+  // Os canceladas ou não canceladas 
+  req.query.status === "true" ? (filter.status = true) : ''
+  req.query.status === "false" ? (filter.status = false) : ''
 
+  // Os finalizadas, abertas ou todas
   req.query.finalized === 'true' ? filter.finalized = req.query.finalized : '';
   req.query.finalized === 'false' ? filter.finalized = req.query.finalized : '';
   req.query.finalized === '' ? "" : '';
