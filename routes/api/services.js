@@ -2,15 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const isEmpyt = require("../../validation/is-empty");
-
-const Service = require('../../models/Service');
 const moment = require('moment')
 const isEmpty = require('../../validation/is-empty')
 
+const Service = require('../../models/Service');
 const Bills = require('../../models/Bills');
 
 // To reset the id
 // Service.counterReset('id', function(err){})
+
 
 // @route GET api/services/
 // @desc get all or filter services
@@ -51,6 +51,7 @@ router.get("/", (req, res) => {
 			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
 		})
 		.sort('os_date')
+		.sort('hour')
 		.then(doc => {
 			res.status(200).json(doc)
 		})
@@ -68,6 +69,7 @@ function escapeRegex(text) {
 	}
 }
 
+
 // @route GET api/services/:id
 // @desc get service by id
 // @access Public
@@ -77,6 +79,7 @@ router.get("/:id", (req, res) => {
     res.json(doc);
   });
 });
+
 
 // @route POST api/services/
 // @desc post service alter filed finalizad of Service and create 2 Bill, Receive type andpayment type
@@ -103,6 +106,7 @@ router.post('/finish/:id', (req, res) => {
 			VarBill.reserve = doc.reserve
 			VarBill.car = doc.car
 			VarBill.reserve = doc.reserve
+			VarBill.driver = doc.driver[0].name
 
 			const newBillReceive = new Bill({...VarBill})
 
@@ -120,13 +124,11 @@ router.post('/finish/:id', (req, res) => {
 
 						res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
 				})
-
 			})
-				
-
 		})
 	})
 })
+
 
 // @route POST api/services/
 // @desc post new service
@@ -240,6 +242,7 @@ router.put('/cancel', (req, res) => {
   	}
   });
 })
+
 
 // @route PUT api/services/edit
 // @desc put edit service
