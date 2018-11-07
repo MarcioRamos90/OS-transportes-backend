@@ -75,6 +75,9 @@ const BillSchema = new Schema({
       }
     }
   ],
+  observation: { 
+    type: String, required: false 
+  },
   car:[{ 
       name:{ 
         type: String, required: false 

@@ -82,6 +82,49 @@ router.get("/:id", (req, res) => {
 
 
 // @route POST api/services/
+// @desc post new service
+// @access Public
+router.post('/', (req, res) => {
+
+	const passenger = function(obj, newService) {
+		obj.forEach( function(element, index) {
+
+			newService.passengers.push(element)
+		});
+	}
+
+	const newService = new Service({})
+
+	req.body.company ? newService.company = req.body.company : '';
+	req.body.passenger ? newService.passengers = req.body.passenger  : '';
+	newService.os_date = req.body.date || Date.now();
+	req.body.requester ? newService.requesters = req.body.requester : '';
+	req.body.reserve ? newService.reserve = req.body.reserve : '';
+	req.body.driver ? newService.driver = req.body.driver : '';
+	req.body.car ? newService.car = req.body.car : '';
+	req.body.custCenter ? newService.custCenter = req.body.custCenter : '';
+	req.body.destiny ? newService.destinys = req.body.destiny : '';
+	req.body.hour ? newService.hour = req.body.hour : '';
+	req.body.observation ? newService.observation = req.body.observation : '';
+	req.body.status == "" ? (newService.status = true) : '';
+  req.body.status === "false" ? (newService.status = false) : '';
+  
+  req.body.value_receive 
+  	? newService.value_receive = req.body.value_receive : newService.value_receive = 0
+  req.body.value_to_pay 
+  	? newService.value_to_pay = req.body.value_to_pay : newService.value_to_pay = 0
+
+	newService.save()
+		.then(doc => {
+			res.json(doc)
+		})
+		.catch(err => {
+			res.status(400).json(err)
+		});
+})
+
+
+// @route POST api/services/
 // @desc post service alter filed finalizad of Service and create 2 Bill, Receive type andpayment type
 // @access Public
 router.post('/finish/:id', (req, res) => {
@@ -127,49 +170,6 @@ router.post('/finish/:id', (req, res) => {
 			})
 		})
 	})
-})
-
-
-// @route POST api/services/
-// @desc post new service
-// @access Public
-router.post('/', (req, res) => {
-
-	const passenger = function(obj, newService) {
-		obj.forEach( function(element, index) {
-
-			newService.passengers.push(element)
-		});
-	}
-
-	const newService = new Service({})
-
-	req.body.company ? newService.company = req.body.company : '';
-	req.body.passenger ? newService.passengers = req.body.passenger  : '';
-	newService.os_date = req.body.date || Date.now();
-	req.body.requester ? newService.requesters = req.body.requester : '';
-	req.body.reserve ? newService.reserve = req.body.reserve : '';
-	req.body.driver ? newService.driver = req.body.driver : '';
-	req.body.car ? newService.car = req.body.car : '';
-	req.body.custCenter ? newService.custCenter = req.body.custCenter : '';
-	req.body.destiny ? newService.destinys = req.body.destiny : '';
-	req.body.hour ? newService.hour = req.body.hour : '';
-	req.body.observation ? newService.observation = req.body.observation : '';
-	req.body.status == "" ? (newService.status = true) : '';
-  req.body.status === "false" ? (newService.status = false) : '';
-  
-  req.body.value_receive 
-  	? newService.value_receive = req.body.value_receive : newService.value_receive = 0
-  req.body.value_to_pay 
-  	? newService.value_to_pay = req.body.value_to_pay : newService.value_to_pay = 0
-
-	newService.save()
-		.then(doc => {
-			res.json(doc)
-		})
-		.catch(err => {
-			res.status(400).json(err)
-		});
 })
 
 
@@ -248,41 +248,111 @@ router.put('/cancel', (req, res) => {
 // @desc put edit service
 // @access Public
 router.put('/edit', (req, res) => {
+	let passengerEdit = false, receiveEdit = false, paymentEdit = false 
+
+
+	let { 
+		id, 
+		company, passenger, date, requester, driver, car, destiny, status, custCenter,
+		observation, hour, reserve
+	 } = req.body;
 	
-	const passenger = function(obj, newService) {
-		obj.forEach( function(element, index) {
-
-			editService.passengers.push(element)
-		});
-	}
-
-	const { id } = req.body;
 	const editService = {};
-	editService.passengers = new Array();
 
-	req.body.company ? editService.company = req.body.company : '';
-	req.body.passenger ? editService.passengers = req.body.passenger  : '';
-	req.body.date ? editService.os_date = req.body.date : '';
-	req.body.requester ? editService.requesters = req.body.requester : '';
+	company ? editService.company = company : '';
+	passenger ? editService.passengers = passenger  : '';
+	date ? editService.os_date = date : '';
+	requester ? editService.requesters = requester : '';
 	
-	req.body.driver ? editService.driver = req.body.driver : '';
-	req.body.car ? editService.car = req.body.car : '';
-	req.body.destiny ? editService.destinys = req.body.destiny : '';
-	req.body.status == "" ? (editService.status = true) : '';
-  req.body.status === "false" ? (editService.status = false) : '';
-  req.body.custCenter ? editService.custCenter = req.body.custCenter : '';
+	driver ? editService.driver = driver : '';
+	car ? editService.car = car : '';
+	destiny ? editService.destinys = destiny : '';
+	status == "" ? (editService.status = true) : '';
+  status === "false" ? (editService.status = false) : '';
+  custCenter ? editService.custCenter = custCenter : '';
 
-  editService.observation = req.body.observation
-  editService.hour = req.body.hour
-  editService.reserve = req.body.reserve  
+  editService.observation = observation
+  editService.hour = hour
+  editService.reserve = reserve  
   
-	Service.findByIdAndUpdate(id, editService, (err, doc) => {
-    if (err)
+  Service.findByIdAndUpdate(id, editService, async(err, doc) => {
+    if (!isEmpty(err))
       return res
         .status(400)
-        .json({ err });
+        .json({error: 'erro na alteração'});
 
-    return res.json({ msg: "Alteração realizada com sucesso!" });
+      passengerEdit = true
+
+    await Bill.find({os_code: doc.id}, async(err, docBill) => {
+    	if (!isEmpty(err))
+      return res
+        .status(400)
+        .json({error: 'erro na procura dereceive'});
+
+      let receiveBill = {
+      	_id,
+      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
+      	reserve, car, driver, value, observation
+      } = docBill.filter((bill) => bill.type === 'receive')[0] || {}
+			
+			receiveBill.name = doc.company[0].name
+			receiveBill.requesters = doc.requesters
+			receiveBill.os_code = doc.id
+			receiveBill.passengers = doc.passengers
+			receiveBill.destinys = doc.destinys
+			receiveBill.os_date = doc.os_date
+			receiveBill.reserve = doc.reserve
+			receiveBill.car = doc.car
+			receiveBill.observation = doc.observation 
+			receiveBill.driver = doc.driver[0].name
+
+			await Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
+				if (!isEmpty(err)){
+      		return res
+		        .status(400)
+		        .json({error: 'erro na alteração'});
+				}
+
+				console.log('receive salvo')
+      	receiveEdit = true;
+			})
+
+			console.log('saindo de receive e entrando em payment')
+			let paymentBill = {
+				_id,
+      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
+      	reserve, car, driver, value, company, observation
+      } = docBill.filter((bill) => bill.type === 'payment')[0] || {}
+			
+			paymentBill.name = doc.driver[0].name
+			paymentBill.requesters = doc.requesters
+			paymentBill.os_code = doc.id
+			paymentBill.passengers = doc.passengers
+			paymentBill.destinys = doc.destinys
+			paymentBill.os_date = doc.os_date
+			paymentBill.reserve = doc.reserve
+			paymentBill.car = doc.car
+			paymentBill.reserve = doc.reserve
+			paymentBill.observation = doc.observation
+			receiveBill.company = doc.company[0].name
+
+	    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
+					if (!isEmpty(err)){
+	      		return res
+			        .status(400)
+			        .json({error: 'erro na alteração'});
+					}
+	      	paymentEdit = true;
+			})
+    })
+
+    
+    return res.json({
+    	passengerEdit,
+    	receiveEdit,
+    	paymentEdit
+    })
+  	
   });
 })
 

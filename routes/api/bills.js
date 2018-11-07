@@ -105,14 +105,15 @@ router.put("/edit", (req, res) => {
   !isEmpty(req.body.os_code) ? billsEdit.os_code = req.body.os_code  : '';
   !isEmpty(req.body.name) ? billsEdit.name = req.body.name  : '';
   !isEmpty(req.body.os_date) ? billsEdit.os_date = req.body.os_date  : '';
-  !isEmpty(req.body.value) ? billsEdit.value = req.body.value  : '';
+  !isEmpty(req.body.value) ? billsEdit.value = req.body.value.replace(',', '.')  : '';
   !isEmpty(req.body.status) ? billsEdit.status = req.body.status : '';
+  !isEmpty(req.body.observation) ? billsEdit.observation = req.body.observation : '';
   !isEmpty(req.body.type) ? billsEdit.type = req.body.type  : '';
 
   Bills.findByIdAndUpdate(id, billsEdit , (err, doc) => {
     if (err)
       return res
-        .status(400)
+        .observation(400)
         .json({ doc });
 
     return res.json(doc);
