@@ -302,7 +302,6 @@ router.put('/edit', (req, res) => {
 			receiveBill.os_date = doc.os_date
 			receiveBill.reserve = doc.reserve
 			receiveBill.car = doc.car
-			receiveBill.observation = doc.observation 
 			receiveBill.driver = doc.driver[0].name
 
 			await Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
@@ -330,7 +329,6 @@ router.put('/edit', (req, res) => {
 			paymentBill.reserve = doc.reserve
 			paymentBill.car = doc.car
 			paymentBill.reserve = doc.reserve
-			paymentBill.observation = doc.observation
 			receiveBill.company = doc.company[0].name
 
 	    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
