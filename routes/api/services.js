@@ -275,14 +275,13 @@ router.put('/edit', (req, res) => {
   editService.hour = hour
   editService.reserve = reserve  
   
-  Service.findByIdAndUpdate(id, editService, async(err, doc) => {
+  Service.findByIdAndUpdate(id, editService, {new: true}, async(err, doc) => {
     if (!isEmpty(err))
       return res
         .status(400)
         .json({error: 'erro na alteração'});
 
       passengerEdit = true
-
     await Bill.find({os_code: doc.id}, async(err, docBill) => {
     	if (!isEmpty(err))
       return res
@@ -313,11 +312,9 @@ router.put('/edit', (req, res) => {
 		        .json({error: 'erro na alteração'});
 				}
 
-				console.log('receive salvo')
       	receiveEdit = true;
 			})
 
-			console.log('saindo de receive e entrando em payment')
 			let paymentBill = {
 				_id,
       	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 

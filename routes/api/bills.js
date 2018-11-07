@@ -103,6 +103,7 @@ router.put("/edit", (req, res) => {
   
   !isEmpty(req.body.service) ? billsEdit.service = req.body.service : '';
   !isEmpty(req.body.os_code) ? billsEdit.os_code = req.body.os_code  : '';
+  !isEmpty(req.body.reserve) ? billsEdit.reserve = req.body.reserve  : '';
   !isEmpty(req.body.name) ? billsEdit.name = req.body.name  : '';
   !isEmpty(req.body.os_date) ? billsEdit.os_date = req.body.os_date  : '';
   !isEmpty(req.body.value) ? billsEdit.value = String(req.body.value).replace(',', '.')  : '';
