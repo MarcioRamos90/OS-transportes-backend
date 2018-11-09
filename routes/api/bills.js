@@ -34,6 +34,7 @@ router.get("/", async (req, res)  =>  {
   !isEmpty(req.query.name) ? filter.name = new RegExp(escapeRegex(req.query.name), "gi") : ''
   !isEmpty(req.query.os_date) ? filter.os_date = new RegExp(escapeRegex(req.query.os_date), "gi") : ''
   !isEmpty(req.query.status) ? filter.status = new RegExp(escapeRegex(req.query.status), "gi") : ''
+  !isEmpty(req.query.custCente) ? filter.custCente = new RegExp(escapeRegex(req.query.custCente), "gi") : ''
   !isEmpty(req.query.type) ? filter.type = new RegExp(escapeRegex(req.query.type), "gi") : ''
   
   const date = {}
@@ -60,7 +61,10 @@ router.get("/:id", async (req, res)  =>  {
   console.log(Bills.schema.path('type').enumValues[0])
   console.log(Bills.schema.path('type').enumValues[1])
 
-  Bills.findById(id).then(doc => {
+  Bills.findById(id)
+  .sort('os_date')
+  .sort('os_code')
+  .then(doc => {
     res.json(doc)
   }).catch(err => {
     res.status(400).json(err)
