@@ -41,7 +41,10 @@ router.get("/", async (req, res)  =>  {
   req.query.start ? date.start = req.query.start : date.start = "2000-01-01"
   req.query.end ? date.end = req.query.end : date.end = "2030-01-01"
 
-  Bills.find({...filter, os_date: { $gte: moment(date.start ), $lte: moment(date.end)} }).then(doc => {
+  Bills.find({...filter, os_date: { $gte: moment(date.start ), $lte: moment(date.end)} })
+  .sort('os_date')
+  .sort('os_code')
+  .then(doc => {
     res.json(doc)
   }).catch(err => {
     res.status(400).json(err)
@@ -62,8 +65,6 @@ router.get("/:id", async (req, res)  =>  {
   console.log(Bills.schema.path('type').enumValues[1])
 
   Bills.findById(id)
-  .sort('os_date')
-  .sort('os_code')
   .then(doc => {
     res.json(doc)
   }).catch(err => {
