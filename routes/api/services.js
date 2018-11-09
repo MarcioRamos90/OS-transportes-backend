@@ -25,6 +25,8 @@ router.get("/", (req, res) => {
 
   // filtros em geral
   !isEmpty(req.query.company) ? filter = { 'company.name': new RegExp(escapeRegex(req.query.company), "gi") } : ''
+  !isEmpty(req.query.custCenter) ? filter = { 'custCenter': new RegExp(escapeRegex(req.query.custCenter), "gi") } : ''
+  !isEmpty(req.query.id) ? filter = { 'id': new RegExp(escapeRegex(req.query.id), "gi") } : ''
   !isEmpty(req.query.reserve) ? filter = { ...filter, 'reserve': new RegExp(escapeRegex(req.query.reserve), "gi") } : ''
   !isEmpty(req.query.passenger) ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
   !isEmpty(req.query.requester) ? filter = { ...filter, 'requesters.name': new RegExp(escapeRegex(req.query.requester), "gi") } : ''
@@ -108,11 +110,6 @@ router.post('/', (req, res) => {
 	req.body.observation ? newService.observation = req.body.observation : '';
 	req.body.status == "" ? (newService.status = true) : '';
   req.body.status === "false" ? (newService.status = false) : '';
-  
-  req.body.value_receive 
-  	? newService.value_receive = req.body.value_receive : newService.value_receive = 0
-  req.body.value_to_pay 
-  	? newService.value_to_pay = req.body.value_to_pay : newService.value_to_pay = 0
 
 	newService.save()
 		.then(doc => {
@@ -127,9 +124,10 @@ router.post('/', (req, res) => {
 // @route POST api/services/
 // @desc post service alter filed finalizad of Service and create 2 Bill, Receive type andpayment type
 // @access Public
+
 router.post('/finish/:id', (req, res) => {
 
-	Service.findById(req.params.id, (err, doc) => {
+	Service.findById(req.params.id,  (err, doc) => {
 		if (err) return res.status(400).json({error: "Erro na busca"});
 
 		doc.finalized = true
@@ -150,6 +148,7 @@ router.post('/finish/:id', (req, res) => {
 			VarBill.car = doc.car
 			VarBill.reserve = doc.reserve
 			VarBill.driver = doc.driver[0].name
+			VarBill.custCenter = doc.custCenter
 
 			const newBillReceive = new Bill({...VarBill})
 
@@ -219,7 +218,8 @@ router.put('/cancel', (req, res) => {
 			VarBill.reserve = doc.reserve
 			VarBill.car = doc.car
 			VarBill.reserve = doc.reserve
-			VarBill.value = req.body.valuetoReceive
+			VarBill.custCenter = doc.custCenter
+			VarBill.value = req.body.valuetoReceive || ""
 
 			const newBillReceive = new Bill({...VarBill})
 			
@@ -229,7 +229,7 @@ router.put('/cancel', (req, res) => {
 				VarBill.name = doc.driver[0].name
 				VarBill.type = "payment"
 				VarBill.company = doc.company[0].name
-				VarBill.value = req.body.valuetoPay
+				VarBill.value = req.body.valuetoPay  || ""
 
 				const newBillPayment = new Bill({...VarBill})
 
@@ -249,7 +249,6 @@ router.put('/cancel', (req, res) => {
 // @access Public
 router.put('/edit', (req, res) => {
 	let passengerEdit = false, receiveEdit = false, paymentEdit = false 
-
 
 	let { 
 		id, 
@@ -302,6 +301,7 @@ router.put('/edit', (req, res) => {
 			receiveBill.os_date = doc.os_date
 			receiveBill.reserve = doc.reserve
 			receiveBill.car = doc.car
+			receiveBill.custCenter = doc.custCenter
 			receiveBill.driver = doc.driver[0].name
 
 			await Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
@@ -329,6 +329,7 @@ router.put('/edit', (req, res) => {
 			paymentBill.reserve = doc.reserve
 			paymentBill.car = doc.car
 			paymentBill.reserve = doc.reserve
+			paymentBill.custCenter = doc.custCenter
 			receiveBill.company = doc.company[0].name
 
 	    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
@@ -341,7 +342,6 @@ router.put('/edit', (req, res) => {
 			})
     })
 
-    
     return res.json({
     	passengerEdit,
     	receiveEdit,
