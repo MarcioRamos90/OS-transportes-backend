@@ -50,10 +50,10 @@ router.get("/", (req, res) => {
 	Service.find(
 		{
 			...filter,
-			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
+			os_date: { $gte: date.start, $lte: date.end} 
 		})
 		.sort('os_date')
-		.sort('id')
+		.sort('hour')
 		.then(doc => {
 			res.status(200).json(doc)
 		})
@@ -95,11 +95,20 @@ router.post('/', (req, res) => {
 		});
 	}
 
+	let getDateTodayFormated = () => {
+		let today = new Date()
+		let dd = today.getDate()
+		let mm = today.getMonth()+1
+		let yyyy = today.getFullYear()
+
+		return (`${yyyy}-${mm}-${dd}`)
+}
+
 	const newService = new Service({})
 
 	req.body.company ? newService.company = req.body.company : '';
 	req.body.passenger ? newService.passengers = req.body.passenger  : '';
-	newService.os_date = req.body.date || Date.now();
+	newService.os_date = req.body.date || getDateTodayFormated();
 	req.body.requester ? newService.requesters = req.body.requester : '';
 	req.body.reserve ? newService.reserve = req.body.reserve : '';
 	req.body.driver ? newService.driver = req.body.driver : '';
@@ -281,67 +290,68 @@ router.put('/edit', (req, res) => {
         .json({error: 'erro na alteração'});
 
       passengerEdit = true
-    await Bill.find({os_code: doc.id}, async(err, docBill) => {
-    	if (!isEmpty(err))
-      return res
-        .status(400)
-        .json({error: 'erro na procura dereceive'});
+    if(doc.finalized){
+	    await Bill.find({os_code: doc.id}, async(err, docBill) => {
+	    	if (!isEmpty(err))
+	      return res
+	        .status(400)
+	        .json({error: 'erro na procura dereceive'});
 
-      let receiveBill = {
-      	_id,
-      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
-      	reserve, car, driver, value, observation
-      } = docBill.filter((bill) => bill.type === 'receive')[0] || {}
-			
-			receiveBill.name = doc.company[0].name
-			receiveBill.requesters = doc.requesters
-			receiveBill.os_code = doc.id
-			receiveBill.passengers = doc.passengers
-			receiveBill.destinys = doc.destinys
-			receiveBill.os_date = doc.os_date
-			receiveBill.reserve = doc.reserve
-			receiveBill.car = doc.car
-			receiveBill.custCenter = doc.custCenter
-			receiveBill.driver = doc.driver[0].name
+	      let receiveBill = {
+	      	_id,
+	      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
+	      	reserve, car, driver, value, observation
+	      } = docBill.filter((bill) => bill.type === 'receive')[0] || {}
+				
+				receiveBill.name = doc.company[0].name
+				receiveBill.requesters = doc.requesters
+				receiveBill.os_code = doc.id
+				receiveBill.passengers = doc.passengers
+				receiveBill.destinys = doc.destinys
+				receiveBill.os_date = doc.os_date
+				receiveBill.reserve = doc.reserve
+				receiveBill.car = doc.car
+				receiveBill.custCenter = doc.custCenter
+				receiveBill.driver = doc.driver[0].name
 
-			await Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
-				if (!isEmpty(err)){
-      		return res
-		        .status(400)
-		        .json({error: 'erro na alteração'});
-				}
-
-      	receiveEdit = true;
-			})
-
-			let paymentBill = {
-				_id,
-      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
-      	reserve, car, driver, value, company, observation
-      } = docBill.filter((bill) => bill.type === 'payment')[0] || {}
-			
-			paymentBill.name = doc.driver[0].name
-			paymentBill.requesters = doc.requesters
-			paymentBill.os_code = doc.id
-			paymentBill.passengers = doc.passengers
-			paymentBill.destinys = doc.destinys
-			paymentBill.os_date = doc.os_date
-			paymentBill.reserve = doc.reserve
-			paymentBill.car = doc.car
-			paymentBill.reserve = doc.reserve
-			paymentBill.custCenter = doc.custCenter
-			receiveBill.company = doc.company[0].name
-
-	    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
+				await Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
 					if (!isEmpty(err)){
 	      		return res
 			        .status(400)
 			        .json({error: 'erro na alteração'});
 					}
-	      	paymentEdit = true;
-			})
-    })
 
+	      	receiveEdit = true;
+				})
+
+				let paymentBill = {
+					_id,
+	      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
+	      	reserve, car, driver, value, company, observation
+	      } = docBill.filter((bill) => bill.type === 'payment')[0] || {}
+				
+				paymentBill.name = doc.driver[0].name
+				paymentBill.requesters = doc.requesters
+				paymentBill.os_code = doc.id
+				paymentBill.passengers = doc.passengers
+				paymentBill.destinys = doc.destinys
+				paymentBill.os_date = doc.os_date
+				paymentBill.reserve = doc.reserve
+				paymentBill.car = doc.car
+				paymentBill.reserve = doc.reserve
+				paymentBill.custCenter = doc.custCenter
+				receiveBill.company = doc.company[0].name
+
+		    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
+						if (!isEmpty(err)){
+		      		return res
+				        .status(400)
+				        .json({error: 'erro na alteração'});
+						}
+		      	paymentEdit = true;
+				})
+	    })
+  	}
     return res.json({
     	passengerEdit,
     	receiveEdit,
