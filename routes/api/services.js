@@ -53,7 +53,7 @@ router.get("/", (req, res) => {
 			os_date: { $gte: moment(date.start ), $lte: moment(date.end)} 
 		})
 		.sort('os_date')
-		.sort('hour')
+		.sort('id')
 		.then(doc => {
 			res.status(200).json(doc)
 		})
