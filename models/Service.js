@@ -84,22 +84,16 @@ const ServiceSchema = new Schema({
   log:[{
       what: {
         type:String,
-        enum: ["criado", "editado"],
-        default: "criado"
+        enum: ["create", "update", "cancel", "finish"],
+        default: "create"
       },
-      when: { type:Date },
-      who: { type:String }
+      when: { type: Date },
+      who: { type: String }
     }
   ],
 },{ timestamps: true });
 
 ServiceSchema.plugin(sequence, {inc_field: 'id'})
 ServiceSchema.plugin(uniqueValidator, {message: 'This email is already taken'})
-
-ServiceSchema.pre('save', function (done) {
-
-  this.log.when = this.updatedAt
-  done()
-})
 
 module.exports = Service = mongoose.model("services", ServiceSchema);

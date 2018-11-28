@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const passport = require("passport");
 
 const isEmpyt = require("../../validation/is-empty");
 const moment = require('moment')
@@ -7,6 +8,11 @@ const isEmpty = require('../../validation/is-empty')
 
 const Service = require('../../models/Service');
 const Bills = require('../../models/Bills');
+
+// To create logs
+const createLogService = require('../../middleware/push-logs-service-model')
+
+const getDateTodayFormated = require('../../tools/date-formated')
 
 // To reset the id
 // Service.counterReset('id', function(err){})
@@ -18,9 +24,7 @@ const Bills = require('../../models/Bills');
 router.get("/", (req, res) => {
 	var start = moment('2018-06-10');
 	var end = moment('2020-12-01');
-	
 	filter = {};
-
   req.query.code ? filter.id =  req.query.code : "";
 
   // filtros em geral
@@ -86,24 +90,7 @@ router.get("/:id", (req, res) => {
 // @route POST api/services/
 // @desc post new service
 // @access Public
-router.post('/', (req, res) => {
-
-	const passenger = function(obj, newService) {
-		obj.forEach( function(element, index) {
-
-			newService.passengers.push(element)
-		});
-	}
-
-	let getDateTodayFormated = () => {
-		let today = new Date()
-		let dd = today.getDate()
-		let mm = today.getMonth()+1
-		let yyyy = today.getFullYear()
-
-		return (`${yyyy}-${mm}-${dd}`)
-}
-
+router.post('/', passport.authenticate("jwt", { session: false }),(req, res) => {
 	const newService = new Service({})
 
 	req.body.company ? newService.company = req.body.company : '';
@@ -122,10 +109,13 @@ router.post('/', (req, res) => {
 
 	newService.save()
 		.then(doc => {
+			return createLogService(doc._id, { who:req.user.name,  what:'create', when:getDateTodayFormated()})
+		})
+		.then(doc => {
 			res.json(doc)
 		})
 		.catch(err => {
-			res.status(400).json(err)
+			return res.status(400).json(err)
 		});
 })
 
@@ -133,136 +123,143 @@ router.post('/', (req, res) => {
 // @route POST api/services/
 // @desc post service alter filed finalizad of Service and create 2 Bill, Receive type andpayment type
 // @access Public
+router.post('/finish/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
 
-router.post('/finish/:id', (req, res) => {
 
-	Service.findById(req.params.id,  (err, doc) => {
-		if (err) return res.status(400).json({error: "Erro na busca"});
-
-		doc.finalized = true
-
-		doc.save((err, updatedService) => {
-			if (err) return res.status(400).json({error: "Erro ao salvar"})
-				
-			const VarBill = {}
-
-			VarBill.service = doc._id
-			VarBill.name = doc.company[0].name
-			VarBill.requesters = doc.requesters
-			VarBill.os_code = doc.id
-			VarBill.passengers = doc.passengers
-			VarBill.destinys = doc.destinys
-			VarBill.os_date = doc.os_date
-			VarBill.reserve = doc.reserve
-			VarBill.car = doc.car
-			VarBill.reserve = doc.reserve
-			VarBill.driver = doc.driver[0].name
-			VarBill.custCenter = doc.custCenter
-
-			const newBillReceive = new Bill({...VarBill})
-
-			newBillReceive.save((err, newBill) => {
-				if (err) return res.status(400).json({error: "Erro ao Criar Receive"})
-
-				VarBill.name = doc.driver[0].name
-				VarBill.type = "payment"
-				VarBill.company = doc.company[0].name
-
-				const newBillPayment = new Bill({...VarBill})
-
-				newBillPayment.save((err, newBill) => {
-					if (err) return res.status(400).json({error: "Erro ao Criar Payment"})
-
-						res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
-				})
-			})
+	Service.update({_id:req.params.id}, {$set: { 'finalized': true }})
+		// create log service
+		.then(doc => Service.findOne({_id:req.params.id}))
+		.then(doc => {
+			createLogService(doc._id, { who:req.user.name,  what:'finish', when:getDateTodayFormated()})
+			return doc
 		})
-	})
+		.then(doc => {
+			const billReceive = new Bill({})
+
+			billReceive.service = doc._id
+			billReceive.name = doc.company[0].name
+			billReceive.requesters = doc.requesters
+			billReceive.os_code = doc.id
+			billReceive.passengers = doc.passengers
+			billReceive.destinys = doc.destinys
+			billReceive.os_date = doc.os_date
+			billReceive.reserve = doc.reserve
+			billReceive.car = doc.car
+			billReceive.reserve = doc.reserve
+			billReceive.driver = doc.driver[0].name
+			billReceive.custCenter = doc.custCenter
+			
+			return billReceive.save()
+		})
+		.then(doc => {
+			const billPayment = new Bill({})
+
+			billPayment.service = doc._id
+			billPayment.name = doc.driver
+			billPayment.requesters = doc.requesters
+			billPayment.os_code = doc.os_code
+			billPayment.passengers = doc.passengers
+			billPayment.destinys = doc.destinys
+			billPayment.os_date = doc.os_date
+			billPayment.reserve = doc.reserve
+			billPayment.car = doc.car
+			billPayment.reserve = doc.reserve
+			billPayment.driver = doc.driver
+			billPayment.custCenter = doc.custCenter
+			billPayment.company = doc.name
+			billPayment.type = "payment"
+
+			return billPayment.save()
+		})
+		.then(doc => {
+			res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
+		})
+		.catch(err => {
+			console.log(err)
+			return res.status(400).json(err)})
 })
 
 
-// @route PUT api/services/cancel
-// @desc put cancel service
+// @route POST api/services/cancel
+// @desc post service alter filed cancel of Service and create 2 Bill, Receive type andpayment type
 // @access Public
-router.put('/cancel', (req, res) => {
-  const { id } = req.body;
+router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
 
-  const editService = {};
-  editService.passengers = new Array();
+	// variables of request body
+  const { message, createBills, valuetoPayment, valuetoReceive } = req.body;
 
-	req.body.company ? editService.company = req.body.company : '';
-	req.body.passenger ? editService.passengers = req.body.passenger  : '';
-	req.body.date ? editService.os_date = req.body.date : '';
-	req.body.requester ? editService.requesters = req.body.requester : '';
-	req.body.driver ? editService.driver = req.body.driver : '';
-	req.body.car ? editService.car = req.body.car : '';
-	req.body.destiny ? editService.destinys = req.body.destiny : '';
-	req.body.message ? editService.message = req.body.message : ''; // Add Message
-  editService.status = false //Cancel OS
-  req.body.custCenter ? editService.custCenter = req.body.custCenter : '';
-  
-  editService.observation = req.body.observation
-  editService.hour = req.body.hour
-  editService.reserve = req.body.reserve
+	Service.update({_id:req.params.id}, {$set: { 'status': false, 'message': message }})
+	.then(doc => Service.findOne({_id:req.params.id}))
+	.then(doc => {
+		createLogService(doc._id, { who:req.user.name,  what:'cancel', when:getDateTodayFormated()})
+		return doc
+	})
+	.then(doc => {	
+			if(createBills === 'false') return {}
 
-	Service.findByIdAndUpdate(id, editService, (err, doc) => {
-    if (!isEmpty(err))
-      return res
-        .status(400)
-        .json({error: 'erro no cancelamento'});
+			const billReceive = new Bill({})
 
-    if(!req.body.createBill)
-    	return res.json({ msg: "Cancelamento realizado com sucesso!" });
+			billReceive.service = doc._id
+			billReceive.name = doc.company[0].name
+			billReceive.requesters = doc.requesters
+			billReceive.os_code = doc.id
+			billReceive.passengers = doc.passengers
+			billReceive.destinys = doc.destinys
+			billReceive.os_date = doc.os_date
+			billReceive.reserve = doc.reserve
+			billReceive.car = doc.car
+			billReceive.reserve = doc.reserve
+			billReceive.driver = doc.driver[0].name
+			billReceive.custCenter = doc.custCenter
+			billReceive.value = req.body.valuetoReceive || ""
 
-    if(req.body.createBill){
-    	const VarBill = {}
+			return billReceive.save()
+		})
+		.then(doc => {
 
-			VarBill.service = doc._id
-			VarBill.name = doc.company[0].name
-			VarBill.requesters = doc.requesters
-			VarBill.os_code = doc.id
-			VarBill.passengers = doc.passengers
-			VarBill.destinys = doc.destinys
-			VarBill.os_date = doc.os_date
-			VarBill.reserve = doc.reserve
-			VarBill.car = doc.car
-			VarBill.reserve = doc.reserve
-			VarBill.custCenter = doc.custCenter
-			VarBill.value = req.body.valuetoReceive || ""
+			if(createBills === 'false') return {}
 
-			const newBillReceive = new Bill({...VarBill})
-			
-			newBillReceive.save((err, newBill) => {
-				if (!isEmpty(err)) return res.status(400).json({error: "Erro ao Criar Receive"})
+			const billPayment = new Bill({})
+			billPayment.service = doc._id
+			billPayment.name = doc.driver
+			billPayment.requesters = doc.requesters
+			billPayment.os_code = doc.os_code
+			billPayment.passengers = doc.passengers
+			billPayment.destinys = doc.destinys
+			billPayment.os_date = doc.os_date
+			billPayment.reserve = doc.reserve
+			billPayment.car = doc.car
+			billPayment.reserve = doc.reserve
+			billPayment.driver = doc.driver
+			billPayment.custCenter = doc.custCenter
+			billPayment.company = doc.name
+			billPayment.type = "payment"
+			billPayment.value = req.body.valuetoPayment || ""
 
-				VarBill.name = doc.driver[0].name
-				VarBill.type = "payment"
-				VarBill.company = doc.company[0].name
-				VarBill.value = req.body.valuetoPay  || ""
-
-				const newBillPayment = new Bill({...VarBill})
-
-				newBillPayment.save((err, newBill) => {
-					if (!isEmpty(err)) return res.status(400).json({error: "Erro ao Criar Payment"})
-
-					return res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
-				});
-    	});
-  	}
-  });
+			return billPayment.save()
+		})
+		.then(doc => {
+			if(createBills === 'false'){
+				res.json({msg: "Cancelamento realizado"})
+			}
+			else res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
+		})
+		.catch(err => {
+			console.log(err)
+			return res.status(400).json(err)})
 })
 
 
 // @route PUT api/services/edit
 // @desc put edit service
 // @access Public
-router.put('/edit', (req, res) => {
+router.put('/edit', passport.authenticate("jwt", { session: false }), (req, res) => {
+
 	let passengerEdit = false, receiveEdit = false, paymentEdit = false 
 
 	let { 
-		id, 
-		company, passenger, date, requester, driver, car, destiny, status, custCenter,
-		observation, hour, reserve
+		_id, company, passenger, date, requester, driver, car, destiny,
+		status, custCenter, observation, hour, reserve, log
 	 } = req.body;
 	
 	const editService = {};
@@ -271,93 +268,94 @@ router.put('/edit', (req, res) => {
 	passenger ? editService.passengers = passenger  : '';
 	date ? editService.os_date = date : '';
 	requester ? editService.requesters = requester : '';
-	
 	driver ? editService.driver = driver : '';
 	car ? editService.car = car : '';
 	destiny ? editService.destinys = destiny : '';
 	status == "" ? (editService.status = true) : '';
   status === "false" ? (editService.status = false) : '';
   custCenter ? editService.custCenter = custCenter : '';
-
   editService.observation = observation
   editService.hour = hour
-  editService.reserve = reserve  
+  editService.reserve = reserve
+  editService.log = log
   
-  Service.findByIdAndUpdate(id, editService, {new: true}, async(err, doc) => {
-    if (!isEmpty(err))
-      return res
-        .status(400)
-        .json({error: 'erro na alteração'});
-
-      passengerEdit = true
-    if(doc.finalized){
-	    await Bill.find({os_code: doc.id}, async(err, docBill) => {
-	    	if (!isEmpty(err))
+  Service.findByIdAndUpdate(_id, editService, {new: true}, (err, doc) => {
+  	createLogService(doc._id, { who:req.user.name,  what:'update', when:getDateTodayFormated()})
+  	.then(doc => {
+	    if (!isEmpty(err))
 	      return res
 	        .status(400)
-	        .json({error: 'erro na procura dereceive'});
+	        .json({error: 'erro na alteração'});
 
-	      let receiveBill = {
-	      	_id,
-	      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
-	      	reserve, car, driver, value, observation
-	      } = docBill.filter((bill) => bill.type === 'receive')[0] || {}
-				
-				receiveBill.name = doc.company[0].name
-				receiveBill.requesters = doc.requesters
-				receiveBill.os_code = doc.id
-				receiveBill.passengers = doc.passengers
-				receiveBill.destinys = doc.destinys
-				receiveBill.os_date = doc.os_date
-				receiveBill.reserve = doc.reserve
-				receiveBill.car = doc.car
-				receiveBill.custCenter = doc.custCenter
-				receiveBill.driver = doc.driver[0].name
+	      passengerEdit = true
+	    if(doc.finalized){
+		     Bill.find({os_code: doc.id}, async(err, docBill) => {
+		    	if (!isEmpty(err))
+		      return res
+		        .status(400)
+		        .json({error: 'erro na procura dereceive'});
 
-				await Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
-					if (!isEmpty(err)){
-	      		return res
-			        .status(400)
-			        .json({error: 'erro na alteração'});
-					}
+		      let receiveBill = {
+		      	_id,
+		      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
+		      	reserve, car, driver, value, observation
+		      } = docBill.filter((bill) => bill.type === 'receive')[0] || {}
+					
+					receiveBill.name = doc.company[0].name
+					receiveBill.requesters = doc.requesters
+					receiveBill.os_code = doc.id
+					receiveBill.passengers = doc.passengers
+					receiveBill.destinys = doc.destinys
+					receiveBill.os_date = doc.os_date
+					receiveBill.reserve = doc.reserve
+					receiveBill.car = doc.car
+					receiveBill.custCenter = doc.custCenter
+					receiveBill.driver = doc.driver[0].name
 
-	      	receiveEdit = true;
-				})
-
-				let paymentBill = {
-					_id,
-	      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
-	      	reserve, car, driver, value, company, observation
-	      } = docBill.filter((bill) => bill.type === 'payment')[0] || {}
-				
-				paymentBill.name = doc.driver[0].name
-				paymentBill.requesters = doc.requesters
-				paymentBill.os_code = doc.id
-				paymentBill.passengers = doc.passengers
-				paymentBill.destinys = doc.destinys
-				paymentBill.os_date = doc.os_date
-				paymentBill.reserve = doc.reserve
-				paymentBill.car = doc.car
-				paymentBill.reserve = doc.reserve
-				paymentBill.custCenter = doc.custCenter
-				receiveBill.company = doc.company[0].name
-
-		    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
+					 Bill.findByIdAndUpdate(receiveBill._id, receiveBill, (err, doc) =>{
 						if (!isEmpty(err)){
 		      		return res
 				        .status(400)
 				        .json({error: 'erro na alteração'});
 						}
-		      	paymentEdit = true;
-				})
+
+		      	receiveEdit = true;
+					})
+
+					let paymentBill = {
+						_id,
+		      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
+		      	reserve, car, driver, value, company, observation
+		      } = docBill.filter((bill) => bill.type === 'payment')[0] || {}
+					
+					paymentBill.name = doc.driver[0].name
+					paymentBill.requesters = doc.requesters
+					paymentBill.os_code = doc.id
+					paymentBill.passengers = doc.passengers
+					paymentBill.destinys = doc.destinys
+					paymentBill.os_date = doc.os_date
+					paymentBill.reserve = doc.reserve
+					paymentBill.car = doc.car
+					paymentBill.reserve = doc.reserve
+					paymentBill.custCenter = doc.custCenter
+					receiveBill.company = doc.company[0].name
+
+			    await Bill.findByIdAndUpdate(paymentBill._id, paymentBill, (err, doc) =>{
+							if (!isEmpty(err)){
+			      		return res
+					        .status(400)
+					        .json({error: 'erro na alteração'});
+							}
+			      	paymentEdit = true;
+					})
+		    })
+	  	}
+	    return res.json({
+	    	passengerEdit,
+	    	receiveEdit,
+	    	paymentEdit
 	    })
-  	}
-    return res.json({
-    	passengerEdit,
-    	receiveEdit,
-    	paymentEdit
-    })
-  	
+  	})
   });
 })
 
