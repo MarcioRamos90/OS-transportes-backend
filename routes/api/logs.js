@@ -19,18 +19,20 @@ const getDateTodayFormated = require('../../tools/date-formated')
 router.post('/service/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
   
   Service.findOne({_id:req.params.id},(err, doc) => {
-    if(!isEmpty(err)) return console.log('erro: ' + err)
+    if(!isEmpty(err)) return res.status(400).json({err: 'erro ao buscar serviço'})
 
-  	if(doc.printed === undefined || doc.printed === false || doc.printed === 'false'){
-			Service.update({_id:req.params.id}, {$set: { 'printed': true}})
-			.then(doc => Service.findOne({_id:req.params.id}))
-			.then(doc => console.log(createLog(doc._id, { who:req.user.name,  what:'print', when:getDateTodayFormated()})))
-      .then(doc => console.log(doc))
-			.then(doc => res.json({msg:'criado log de primeira impresão'}))
-			.catch(err => res.status(400).json(err))
-  	}else {
-  		return res.json({msg: 'já existe log'})
-  	}
+    else{
+      if(doc.printed === undefined || doc.printed === false || doc.printed === 'false'){
+        Service.update({_id:req.params.id}, {$set: { 'printed': true}})
+        .then(doc => Service.findOne({_id:req.params.id}))
+        .then(doc => console.log(createLog(doc._id, { who:req.user.name,  what:'print', when:getDateTodayFormated()})))
+        .then(doc => console.log(doc))
+        .then(doc => res.json({msg:'criado log de primeira impresão'}))
+        .catch(err => res.status(400).json({err: 'erro ao criar log'}))
+      }else {
+        return res.json({msg: 'já existe log'})
+      }
+    }
   })
 })
 // res.status(400).json(err)
