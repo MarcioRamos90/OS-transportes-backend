@@ -6,7 +6,6 @@ module.exports = (id, log) => {
 		.then((doc) => {
 
 			doc.log.push(log);
-			console.log("middle:" + doc)
 			return doc.save()
 		})
 		.then(docF =>  docF)

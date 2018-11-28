@@ -81,10 +81,11 @@ const ServiceSchema = new Schema({
   status: {
     type: Boolean, default: true
   },
+  printed: {type: Boolean, default: false},
   log:[{
       what: {
         type:String,
-        enum: ["create", "update", "cancel", "finish"],
+        enum: ["create", "update", "cancel", "finish", "print"],
         default: "create"
       },
       when: { type: Date },

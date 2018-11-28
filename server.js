@@ -13,6 +13,8 @@ const local = require("./routes/api/local");
 const passenger = require("./routes/api/passenger");
 const services = require("./routes/api/services");
 const bills = require("./routes/api/bills");
+const logs = require("./routes/api/logs");
+
 const allowCors = require("./config/cors");
 
 const app = express();
@@ -41,6 +43,7 @@ require("./config/passport")(passport);
 
 app.use("/api/services", services)
 app.use("/api/bills", bills)
+app.use("/api/logs", logs)
 app.use("/api/users", users);
 app.use("/api/companies", companies);
 app.use("/api/requesters", requesters);

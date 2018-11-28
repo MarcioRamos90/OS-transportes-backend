@@ -2,9 +2,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 
-const isEmpyt = require("../../validation/is-empty");
+const isEmpty = require("../../validation/is-empty");
 const moment = require('moment')
-const isEmpty = require('../../validation/is-empty')
 
 const Service = require('../../models/Service');
 const Bills = require('../../models/Bills');
