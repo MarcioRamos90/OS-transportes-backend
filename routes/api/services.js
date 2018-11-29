@@ -179,11 +179,10 @@ router.post('/finish/:id', passport.authenticate("jwt", { session: false }), (re
 })
 
 
-// @route POST api/services/cancel
+// @route POST api/services/cancel/:id
 // @desc post service alter filed cancel of Service and create 2 Bill, Receive type andpayment type
 // @access Public
 router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
-
 	// variables of request body
   const { message, createBills, valuetoPayment, valuetoReceive } = req.body;
 
@@ -194,7 +193,7 @@ router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (re
 		return doc
 	})
 	.then(doc => {	
-			if(createBills === 'false') return {}
+			if(createBills === 'false' || createBills === false) return {}
 
 			const billReceive = new Bill({})
 
@@ -210,13 +209,13 @@ router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (re
 			billReceive.reserve = doc.reserve
 			billReceive.driver = doc.driver[0].name
 			billReceive.custCenter = doc.custCenter
-			billReceive.value = req.body.valuetoReceive || ""
+			billReceive.value = valuetoReceive || ""
 
 			return billReceive.save()
 		})
 		.then(doc => {
 
-			if(createBills === 'false') return {}
+			if(createBills === 'false' || createBills === false) return {}
 
 			const billPayment = new Bill({})
 			billPayment.service = doc._id
@@ -233,18 +232,17 @@ router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (re
 			billPayment.custCenter = doc.custCenter
 			billPayment.company = doc.name
 			billPayment.type = "payment"
-			billPayment.value = req.body.valuetoPayment || ""
+			billPayment.value = valuetoPayment || ""
 
 			return billPayment.save()
 		})
 		.then(doc => {
-			if(createBills === 'false'){
+			if(createBills === 'false' || createBills === false){
 				res.json({msg: "Cancelamento realizado"})
 			}
 			else res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
 		})
 		.catch(err => {
-			console.log(err)
 			return res.status(400).json(err)})
 })
 
