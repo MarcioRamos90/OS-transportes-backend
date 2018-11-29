@@ -120,62 +120,67 @@ router.post('/', passport.authenticate("jwt", { session: false }),(req, res) => 
 
 
 // @route POST api/services/
-// @desc post service alter filed finalizad of Service and create 2 Bill, Receive type andpayment type
+// @desc post service alter filed finalized of Service and create 2 Bill, Receive type andpayment type
 // @access Public
 router.post('/finish/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
 
+	Service.findOne({_id:req.params.id}, (err, doc) => {
+		if(doc.finalized === 'true' || doc.finalized === true){
+		// verificando se os Já foi finalizada
+			res.json({msg: 'Serviço já finalizado'})
+		}else{
+			Service.update({_id:req.params.id}, {$set: { 'finalized': true }})
+			.then(doc => Service.findOne({_id:req.params.id}))
+			.then(doc => {
 
-	Service.update({_id:req.params.id}, {$set: { 'finalized': true }})
-		// create log service
-		.then(doc => Service.findOne({_id:req.params.id}))
-		.then(doc => {
-			createLogService(doc._id, { who:req.user.name,  what:'finish', when:getDateTodayFormated()})
-			return doc
-		})
-		.then(doc => {
-			const billReceive = new Bill({})
+				createLogService(doc._id, { who:req.user.name,  what:'finish', when:getDateTodayFormated()})
+				return doc
+			})
+			.then(doc => {
+				const billReceive = new Bill({})
 
-			billReceive.service = doc._id
-			billReceive.name = doc.company[0].name
-			billReceive.requesters = doc.requesters
-			billReceive.os_code = doc.id
-			billReceive.passengers = doc.passengers
-			billReceive.destinys = doc.destinys
-			billReceive.os_date = doc.os_date
-			billReceive.reserve = doc.reserve
-			billReceive.car = doc.car
-			billReceive.reserve = doc.reserve
-			billReceive.driver = doc.driver[0].name
-			billReceive.custCenter = doc.custCenter
-			
-			return billReceive.save()
-		})
-		.then(doc => {
-			const billPayment = new Bill({})
+				billReceive.service = doc._id
+				billReceive.name = doc.company[0].name
+				billReceive.requesters = doc.requesters
+				billReceive.os_code = doc.id
+				billReceive.passengers = doc.passengers
+				billReceive.destinys = doc.destinys
+				billReceive.os_date = doc.os_date
+				billReceive.reserve = doc.reserve
+				billReceive.car = doc.car
+				billReceive.reserve = doc.reserve
+				billReceive.driver = doc.driver[0].name
+				billReceive.custCenter = doc.custCenter
+				
+				return billReceive.save()
+			})
+			.then(doc => {
+				const billPayment = new Bill({})
 
-			billPayment.service = doc._id
-			billPayment.name = doc.driver
-			billPayment.requesters = doc.requesters
-			billPayment.os_code = doc.os_code
-			billPayment.passengers = doc.passengers
-			billPayment.destinys = doc.destinys
-			billPayment.os_date = doc.os_date
-			billPayment.reserve = doc.reserve
-			billPayment.car = doc.car
-			billPayment.reserve = doc.reserve
-			billPayment.driver = doc.driver
-			billPayment.custCenter = doc.custCenter
-			billPayment.company = doc.name
-			billPayment.type = "payment"
+				billPayment.service = doc._id
+				billPayment.name = doc.driver
+				billPayment.requesters = doc.requesters
+				billPayment.os_code = doc.os_code
+				billPayment.passengers = doc.passengers
+				billPayment.destinys = doc.destinys
+				billPayment.os_date = doc.os_date
+				billPayment.reserve = doc.reserve
+				billPayment.car = doc.car
+				billPayment.reserve = doc.reserve
+				billPayment.driver = doc.driver
+				billPayment.custCenter = doc.custCenter
+				billPayment.company = doc.name
+				billPayment.type = "payment"
 
-			return billPayment.save()
-		})
-		.then(doc => {
-			res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
-		})
-		.catch(err => {
-			console.log(err)
-			return res.status(400).json(err)})
+				return billPayment.save()
+			})
+			.then(doc => {
+				res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
+			})
+			.catch(err => {console.log(err)
+				return res.status(400).json(err)})
+		}
+	})
 })
 
 
@@ -186,64 +191,71 @@ router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (re
 	// variables of request body
   const { message, createBills, valuetoPayment, valuetoReceive } = req.body;
 
-	Service.update({_id:req.params.id}, {$set: { 'status': false, 'message': message }})
-	.then(doc => Service.findOne({_id:req.params.id}))
-	.then(doc => {
-		createLogService(doc._id, { who:req.user.name,  what:'cancel', when:getDateTodayFormated()})
-		return doc
+  Service.findOne({_id:req.params.id}, (err, doc) => {
+  	if(doc.status === 'false' || doc.status === false){ 
+  	// verificando se OS já está cancelada ou finalizada
+			res.status(400).json({msg: 'Serviço já cancelado'})
+		}else{
+			Service.update({_id:req.params.id}, {$set: { 'status': false, 'message': message }})
+			.then(doc => Service.findOne({_id:req.params.id}))
+			.then(doc => {
+				createLogService(doc._id, { who:req.user.name,  what:'cancel', when:getDateTodayFormated()})
+				return doc
+			})
+			.then(doc => {	
+					if(createBills === 'false' || createBills === false) return {}
+
+					const billReceive = new Bill({})
+
+					billReceive.service = doc._id
+					billReceive.name = doc.company[0].name
+					billReceive.requesters = doc.requesters
+					billReceive.os_code = doc.id
+					billReceive.passengers = doc.passengers
+					billReceive.destinys = doc.destinys
+					billReceive.os_date = doc.os_date
+					billReceive.reserve = doc.reserve
+					billReceive.car = doc.car
+					billReceive.reserve = doc.reserve
+					billReceive.driver = doc.driver[0].name
+					billReceive.custCenter = doc.custCenter
+					billReceive.value = valuetoReceive || ""
+
+					return billReceive.save()
+				})
+			.then(doc => {
+
+				if(createBills === 'false' || createBills === false) return {}
+
+				const billPayment = new Bill({})
+				billPayment.service = doc._id
+				billPayment.name = doc.driver
+				billPayment.requesters = doc.requesters
+				billPayment.os_code = doc.os_code
+				billPayment.passengers = doc.passengers
+				billPayment.destinys = doc.destinys
+				billPayment.os_date = doc.os_date
+				billPayment.reserve = doc.reserve
+				billPayment.car = doc.car
+				billPayment.reserve = doc.reserve
+				billPayment.driver = doc.driver
+				billPayment.custCenter = doc.custCenter
+				billPayment.company = doc.name
+				billPayment.type = "payment"
+				billPayment.value = valuetoPayment || ""
+
+				return billPayment.save()
+			})
+			.then(doc => {
+				if(createBills === 'false' || createBills === false){
+					res.json({msg: "Cancelamento realizado"})
+				}
+				else res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
+			})
+			.catch(err => {
+				return res.status(400).json(err)})
+		}
 	})
-	.then(doc => {	
-			if(createBills === 'false' || createBills === false) return {}
-
-			const billReceive = new Bill({})
-
-			billReceive.service = doc._id
-			billReceive.name = doc.company[0].name
-			billReceive.requesters = doc.requesters
-			billReceive.os_code = doc.id
-			billReceive.passengers = doc.passengers
-			billReceive.destinys = doc.destinys
-			billReceive.os_date = doc.os_date
-			billReceive.reserve = doc.reserve
-			billReceive.car = doc.car
-			billReceive.reserve = doc.reserve
-			billReceive.driver = doc.driver[0].name
-			billReceive.custCenter = doc.custCenter
-			billReceive.value = valuetoReceive || ""
-
-			return billReceive.save()
-		})
-		.then(doc => {
-
-			if(createBills === 'false' || createBills === false) return {}
-
-			const billPayment = new Bill({})
-			billPayment.service = doc._id
-			billPayment.name = doc.driver
-			billPayment.requesters = doc.requesters
-			billPayment.os_code = doc.os_code
-			billPayment.passengers = doc.passengers
-			billPayment.destinys = doc.destinys
-			billPayment.os_date = doc.os_date
-			billPayment.reserve = doc.reserve
-			billPayment.car = doc.car
-			billPayment.reserve = doc.reserve
-			billPayment.driver = doc.driver
-			billPayment.custCenter = doc.custCenter
-			billPayment.company = doc.name
-			billPayment.type = "payment"
-			billPayment.value = valuetoPayment || ""
-
-			return billPayment.save()
-		})
-		.then(doc => {
-			if(createBills === 'false' || createBills === false){
-				res.json({msg: "Cancelamento realizado"})
-			}
-			else res.json({msg: "Recebimento e Pagamento criados com sucesso. Para consultá-los vá para o módulo de CONTAS"})
-		})
-		.catch(err => {
-			return res.status(400).json(err)})
 })
 
 
