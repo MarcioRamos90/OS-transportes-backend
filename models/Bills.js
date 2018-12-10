@@ -86,6 +86,9 @@ const BillSchema = new Schema({
   custCenter: { 
     type: String, required: false 
   },
+  hour: { 
+    type: String, required: false 
+  },
 },{ timestamps: true });
 
 // ReceiveSchema.plugin(sequence, {inc_field: 'id'})

@@ -148,6 +148,7 @@ router.post('/finish/:id', passport.authenticate("jwt", { session: false }), (re
 				billReceive.os_date = doc.os_date
 				billReceive.reserve = doc.reserve
 				billReceive.car = doc.car
+				billReceive.hour = doc.hour
 				billReceive.reserve = doc.reserve
 				billReceive.driver = doc.driver[0].name
 				billReceive.custCenter = doc.custCenter
@@ -166,6 +167,7 @@ router.post('/finish/:id', passport.authenticate("jwt", { session: false }), (re
 				billPayment.os_date = doc.os_date
 				billPayment.reserve = doc.reserve
 				billPayment.car = doc.car
+				billPayment.hour = doc.hour
 				billPayment.reserve = doc.reserve
 				billPayment.driver = doc.driver
 				billPayment.custCenter = doc.custCenter
@@ -216,6 +218,7 @@ router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (re
 					billReceive.os_date = doc.os_date
 					billReceive.reserve = doc.reserve
 					billReceive.car = doc.car
+					billReceive.hour = doc.hour
 					billReceive.reserve = doc.reserve
 					billReceive.driver = doc.driver[0].name
 					billReceive.custCenter = doc.custCenter
@@ -237,6 +240,7 @@ router.post('/cancel/:id', passport.authenticate("jwt", { session: false }), (re
 				billPayment.os_date = doc.os_date
 				billPayment.reserve = doc.reserve
 				billPayment.car = doc.car
+				billPayment.hour = doc.hour
 				billPayment.reserve = doc.reserve
 				billPayment.driver = doc.driver
 				billPayment.custCenter = doc.custCenter
@@ -307,7 +311,7 @@ router.put('/edit', passport.authenticate("jwt", { session: false }), (req, res)
 		      let receiveBill = {
 		      	_id,
 		      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
-		      	reserve, car, driver, value, observation
+		      	reserve, car, hour, driver, value, observation
 		      } = docBill.filter((bill) => bill.type === 'receive')[0] || {}
 					
 					receiveBill.name = doc.company[0].name
@@ -318,6 +322,7 @@ router.put('/edit', passport.authenticate("jwt", { session: false }), (req, res)
 					receiveBill.os_date = doc.os_date
 					receiveBill.reserve = doc.reserve
 					receiveBill.car = doc.car
+					receiveBill.hour = doc.hour
 					receiveBill.custCenter = doc.custCenter
 					receiveBill.driver = doc.driver[0].name
 
@@ -334,7 +339,7 @@ router.put('/edit', passport.authenticate("jwt", { session: false }), (req, res)
 					let paymentBill = {
 						_id,
 		      	status, type, checked, service, name, requesters, os_code, passengers, destinys, os_date, 
-		      	reserve, car, driver, value, company, observation
+		      	reserve, car, hour, driver, value, company, observation
 		      } = docBill.filter((bill) => bill.type === 'payment')[0] || {}
 					
 					paymentBill.name = doc.driver[0].name
@@ -345,6 +350,7 @@ router.put('/edit', passport.authenticate("jwt", { session: false }), (req, res)
 					paymentBill.os_date = doc.os_date
 					paymentBill.reserve = doc.reserve
 					paymentBill.car = doc.car
+					paymentBill.hour = doc.hour
 					paymentBill.reserve = doc.reserve
 					paymentBill.custCenter = doc.custCenter
 					receiveBill.company = doc.company[0].name
