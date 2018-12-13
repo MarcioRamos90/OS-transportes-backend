@@ -42,8 +42,8 @@ router.get("/", async (req, res)  =>  {
   req.query.end ? date.end = req.query.end : date.end = "2030-01-01"
 
   Bills.find({...filter, os_date: { $gte: moment(date.start ), $lte: moment(date.end)} })
-  .sort('hour')
   .sort('os_date')
+  .sort('hour')
   .sort('os_code')
   .then(doc => {
     res.json(doc)
