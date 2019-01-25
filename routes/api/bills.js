@@ -28,10 +28,10 @@ router.get("/", async (req, res)  =>  {
 
   req.query.code ? filter.id =  req.query.code : '';
 
-
   !isEmpty(req.query.service) ? filter.service = new RegExp(escapeRegex(req.query.service), "gi") : ''
   !isEmpty(req.query.os_code) ? filter.os_code = req.query.os_code : ""
   !isEmpty(req.query.name) ? filter.name = new RegExp(escapeRegex(req.query.name), "gi") : ''
+  !isEmpty(req.query.passenger) ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
   !isEmpty(req.query.os_date) ? filter.os_date = new RegExp(escapeRegex(req.query.os_date), "gi") : ''
   !isEmpty(req.query.status) ? filter.status = new RegExp(escapeRegex(req.query.status), "gi") : ''
   !isEmpty(req.query.custCente) ? filter.custCente = new RegExp(escapeRegex(req.query.custCente), "gi") : ''

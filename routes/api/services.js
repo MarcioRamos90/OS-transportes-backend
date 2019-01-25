@@ -32,6 +32,7 @@ router.get("/", (req, res) => {
   !isEmpty(req.query.id) ? filter = { 'id': new RegExp(escapeRegex(req.query.id), "gi") } : ''
   !isEmpty(req.query.reserve) ? filter = { ...filter, 'reserve': new RegExp(escapeRegex(req.query.reserve), "gi") } : ''
   !isEmpty(req.query.passenger) ? filter = { ...filter, 'passengers.name': new RegExp(escapeRegex(req.query.passenger), "gi") } : ''
+  // !isEmpty(req.query.local) ? filter = { ...filter, 'local.adress': new RegExp(escapeRegex(req.query.local), "gi") } : ''
   !isEmpty(req.query.requester) ? filter = { ...filter, 'requesters.name': new RegExp(escapeRegex(req.query.requester), "gi") } : ''
   !isEmpty(req.query.driver) ? filter = { ...filter, 'driver.name': new RegExp(escapeRegex(req.query.driver), "gi") } : ''
   !isEmpty(req.query.car) ? filter = { ...filter, 'car.name': new RegExp(escapeRegex(req.query.car), "gi") } : ''
