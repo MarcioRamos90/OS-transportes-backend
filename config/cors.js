@@ -1,5 +1,9 @@
 module.exports = (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  const allowedOrigins = ['https://os-transportes.herokuapp.com', 'goncalves-app-front.herokuapp.com'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+       res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.header(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
