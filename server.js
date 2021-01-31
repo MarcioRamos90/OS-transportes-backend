@@ -2,7 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyparser = require("body-parser");
 const passport = require("passport");
-const moment = require("moment");
+
+const allowCors = require("./config/cors");
 
 const users = require("./routes/api/users");
 const requesters = require("./routes/api/requesters");
@@ -14,8 +15,6 @@ const passenger = require("./routes/api/passenger");
 const services = require("./routes/api/services");
 const bills = require("./routes/api/bills");
 const logs = require("./routes/api/logs");
-
-const allowCors = require("./config/cors");
 
 const app = express();
 
